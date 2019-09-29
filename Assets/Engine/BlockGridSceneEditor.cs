@@ -17,19 +17,13 @@ namespace KineticEnergy.Ships {
     [ExecuteInEditMode]
     public class BlockGridSceneEditor : MonoBehaviour {
 
-        /// <summary>
-        /// The maximum distance from the camera the should be placed at.
-        /// </summary>
+        /// <summary>The maximum distance from the camera the should be placed at.</summary>
         public float distance = 10.0f;
 
-        /// <summary>
-        /// Expected error of raycasting into the grid.
-        /// </summary>
+        /// <summary>Expected error of raycasting into the grid.</summary>
         public float hitError = 0.01f;
 
-        /// <summary>
-        /// Current <see cref="BlockPreview"/> that is being moved around.
-        /// </summary>
+        /// <summary>Current <see cref="BlockPreview"/> that is being moved around.</summary>
         public BlockPreview selectedBlock;
 
         private BlockGrid grid;
