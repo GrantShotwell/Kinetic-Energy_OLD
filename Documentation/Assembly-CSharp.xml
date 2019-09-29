@@ -1,0 +1,1450 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Assembly-CSharp</name>
+    </assembly>
+    <members>
+        <member name="T:KineticEnergy.Ships.Blocks.Block">
+            <summary>Base class for all blocks.</summary>
+        </member>
+        <member name="P:KineticEnergy.Ships.Blocks.Block.Name">
+            <summary>
+            Shortcut for "<c>gameObject.name</c>".
+            </summary>
+        </member>
+        <member name="P:KineticEnergy.Ships.Blocks.Block.Dimensions">
+            <summary>
+            The dimentions of this block. Runs <see cref="M:KineticEnergy.Ships.Blocks.Block.GetDimensionInformation"/> when set. Nothing becides "return" is done on get.
+            </summary>
+        </member>
+        <member name="P:KineticEnergy.Ships.Blocks.Block.Mass">
+            <summary>
+            The <see cref="T:KineticEnergy.Ships.Mass"/> of this block. Updates the <see cref="F:KineticEnergy.Ships.Blocks.Block.grid"/>'s <see cref="P:KineticEnergy.Ships.Blocks.Block.Mass"/> when set. Nothing becides "return" is done on get.
+            </summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.Block.SetGrid(KineticEnergy.Ships.BlockGrid,UnityEngine.Vector3Int)">
+            <summary>
+            Sets transform position and parent, amung some references inside Block.
+            </summary>
+            <param name="grid">The <see cref="T:KineticEnergy.Ships.BlockGrid"/> to set this object's <see cref="F:KineticEnergy.Ships.Blocks.Block.grid"/> as.</param>
+            <param name="gridPosition">The position in the <see cref="T:KineticEnergy.Ships.BlockGrid"/> this <see cref="T:KineticEnergy.Ships.Blocks.Block"/> will be moved to.</param>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.Block.GetDimensionInformation">
+            <summary>
+            Sets important variables inside <see cref="T:KineticEnergy.Ships.Blocks.Block"/>, which would otherwise be innacurate or null.
+            </summary>
+            <remarks>
+            Should be called when this object is created or when <see cref="F:KineticEnergy.Ships.Blocks.Block.m_dimentions"/> (not <see cref="P:KineticEnergy.Ships.Blocks.Block.Dimensions"/>) is changed.
+            </remarks>
+        </member>
+        <member name="P:KineticEnergy.Ships.Blocks.Block.GridCorner">
+            <summary>Shortcut for "<c><see cref="P:KineticEnergy.Ships.Blocks.Block.Dimensions"/> - <see cref="P:UnityEngine.Vector3Int.one"/></c>".</summary>
+        </member>
+        <member name="P:KineticEnergy.Ships.Blocks.Block.SurfaceArea">
+            <summary>Calculates the surface area.</summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.Blocks.Block.grid">
+            <summary>The <see cref="T:KineticEnergy.Ships.BlockGrid"/> associated with this block.</summary>
+        </member>
+        <member name="P:KineticEnergy.Ships.Blocks.Block.gridPosition">
+            <summary>
+            The position of this block in its <see cref="T:KineticEnergy.Ships.BlockGrid"/> grid space.
+            </summary>
+            <seealso cref="F:KineticEnergy.Ships.Blocks.Block.grid"/>
+            <seealso cref="F:KineticEnergy.Ships.BlockGrid.offset"/>
+        </member>
+        <member name="P:KineticEnergy.Ships.Blocks.Block.arrayPosition">
+            <summary>
+            The position of this block in its <see cref="T:KineticEnergy.Ships.BlockGrid"/> array space.
+            </summary>
+            <seealso cref="F:KineticEnergy.Ships.Blocks.Block.grid"/>
+            <seealso cref="F:KineticEnergy.Ships.BlockGrid.offset"/>
+        </member>
+        <member name="F:KineticEnergy.Ships.Blocks.Block.neighboringPoints">
+            <summary>
+            All of the grid cell locations (from a local reference) that touch this block.
+            Null until <see cref="M:KineticEnergy.Ships.Blocks.Block.GetDimensionInformation"/> or <see cref="M:KineticEnergy.Ships.Blocks.Block.UpdateNeighboringPoints"/> is called.
+            </summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.Block.UpdateNeighboringPoints">
+            <summary>Assigns to <see cref="F:KineticEnergy.Ships.Blocks.Block.neighboringPoints"/>.</summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.Blocks.Block.insidePoints">
+            <summary>All of the cells in the grid that make up this block (from a local point of view). Null until 'GetLocalInformation()' or 'UpdateInsidePieces()' is called.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.Block.UpdateInsidePoints">
+            <summary>Assigns to 'insidePieces'.</summary>
+        </member>
+        <member name="T:KineticEnergy.Ships.Blocks.Block.Face">
+            <summary>
+            Defines all of the faces that a <see cref="T:KineticEnergy.Ships.Blocks.Block"/> can have.
+            </summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.Block.WhichFacesShown">
+            <summary>
+            Checks all faces and returns an <see cref="T:System.Int32"/> that represents a set of booleans of which faces are covered.
+            </summary>
+            <returns>
+            Returns a byte that represents a set of booleans for which faces are shown. Starting from the right-most binary digit: 1-right, 2-left, 3-top, 4-bottom, 5-front, 6-back
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.Block.RelativeGridToGrid(UnityEngine.Vector3)">
+            <summary>A relative grid position's origin is at the transform of the block, but does not account for rotation of the transform.</summary>
+            <param name="relativeGridPosition">The relative grid position to translate.</param>
+            <returns>Returns a grid position.</returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.Block.RelativeGridToGrid(UnityEngine.Vector3,UnityEngine.Quaternion)">
+            <summary>A relative grid position's origin is at the transform of the block, but does not account for rotation of the transform.</summary>
+            <param name="relativeGridPosition">The relative grid position to translate.</param>
+            <param name="inverseLocalRotation">The <see cref="M:UnityEngine.Quaternion.Inverse(UnityEngine.Quaternion)"/> of the <see cref="P:UnityEngine.Transform.localRotation"/>.</param>
+            <returns>Returns a grid position.</returns>
+        </member>
+        <member name="T:KineticEnergy.Ships.Blocks.Faces">
+            <summary>Class used to store and show/hide the six faces of an <see cref="T:KineticEnergy.Ships.Blocks.OpaqueBlock"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.Faces.ToggleFaces(System.Byte)">
+            <summary>
+            Uses the given enabled faces to use <see cref="M:UnityEngine.GameObject.SetActive(System.Boolean)"/>.
+            </summary>
+            <param name="enabledFlaces">Represents a line of booleans (starting on the right side) that correspond to Right, Left, Top, Bottom, Front, Back.</param>
+        </member>
+        <member name="T:KineticEnergy.Ships.Blocks.OpaqueBlock">
+            <summary>
+            All sides are opaque.
+            </summary>
+        </member>
+        <member name="T:KineticEnergy.Ships.Blocks.TranslucentBlock">
+            <summary>
+            Some sides are opaque.
+            </summary>
+        </member>
+        <member name="T:KineticEnergy.Ships.Blocks.TransparentBlock">
+            <summary>
+            No sides are opaque.
+            </summary>
+        </member>
+        <member name="T:KineticEnergy.Ships.Blocks.BlockPreview">
+            <summary>
+            Class for selecting then placing blocks on a <see cref="T:KineticEnergy.Ships.BlockGrid"/>.
+            <para>
+            <list type="number">
+                <listheader>
+                <para/>How to create a <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/> of your <see cref="T:KineticEnergy.Ships.Blocks.Block"/>.
+                </listheader>
+                <item>
+                    <term><para/>1.</term>
+                    <description>
+                    Create a "Prefab Variant" of the original <see cref="T:KineticEnergy.Ships.Blocks.Block"/>.
+                    This variant will have every component on the parent removed except for the the collider.
+                    Add the <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/> component to your new <see cref="T:UnityEngine.GameObject"/> prefab.
+                    </description>
+                    </item>
+                <item>
+                    <term><para/>2.</term>
+                    <description>
+                    In the inspector, set up the <see cref="T:KineticEnergy.Ships.Blocks.Block"/> prefab as the <see cref="F:KineticEnergy.Ships.Blocks.BlockPreview.realBlockPrefab"/>.
+                    The <see cref="F:KineticEnergy.Ships.Blocks.BlockPreview.blockGridPrefab"/> should have been set when the <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/> component was added.
+                    </description>
+                </item>
+                <item>
+                    <term><para/>3.</term>
+                    <description>
+                    Place everything directly related to the block into a new folder located in "Assets/Resources/Blocks/[FOLDER: BlockName]/{stuff}".
+                    This includes both prefabs, any associated materials, and the behavior scripts for the block.
+                    </description>
+                </item>
+                </list>
+            </para>
+            </summary>
+            <seealso cref="!:KineticEnergy.Intangibles.GlobalPaletteManager"/>
+        </member>
+        <member name="F:KineticEnergy.Ships.Blocks.BlockPreview.realBlockPrefab">
+            <summary>
+            The "real" <see cref="T:KineticEnergy.Ships.Blocks.Block"/> counterpart to this <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/>.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.Blocks.BlockPreview.blockGridPrefab">
+            <summary>
+            A refrence to a blank <see cref="T:KineticEnergy.Ships.BlockGrid"/> <see cref="T:UnityEngine.GameObject"/> to instantiate when <see cref="M:KineticEnergy.Ships.Blocks.BlockPreview.PlaceNewGrid"/> is called.
+            </summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.BlockPreview.Place(KineticEnergy.Ships.BlockGrid,UnityEngine.Vector3Int)">
+            <summary>
+            Places the "real" <see cref="T:KineticEnergy.Ships.Blocks.Block"/> of this <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/> into the specified <see cref="T:KineticEnergy.Ships.BlockGrid"/> at the specified location.
+            </summary>
+            <param name="grid">The <see cref="T:KineticEnergy.Ships.BlockGrid"/> to place the <see cref="F:KineticEnergy.Ships.Blocks.BlockPreview.realBlockPrefab"/> at.</param>
+            <param name="position">The position in grid to place the <see cref="F:KineticEnergy.Ships.Blocks.BlockPreview.realBlockPrefab"/> at.</param>
+        </member>
+        <member name="M:KineticEnergy.Ships.Blocks.BlockPreview.PlaceNewGrid">
+            <summary>
+            Places the "real" <see cref="T:KineticEnergy.Ships.Blocks.Block"/> of this <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/> into a new <see cref="T:KineticEnergy.Ships.BlockGrid"/> at it's current position.
+            </summary>
+            <returns>Returns the <see cref="T:KineticEnergy.Ships.BlockGrid"/> that was just created and contains the newly instantiated <see cref="F:KineticEnergy.Ships.Blocks.BlockPreview.realBlockPrefab"/>.</returns>
+        </member>
+        <member name="T:KineticEnergy.Ships.BlockGrid">
+            <summary>
+            Represents everything about a ship-thingy.
+            </summary>
+            <remarks>
+            Extends <see cref="T:System.Collections.IEnumerable"/> to iterate through <see cref="F:KineticEnergy.Ships.BlockGrid.array"/>.
+            </remarks>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGrid.array">
+            <summary>
+            A 3-dimentional array that contains all <see cref="T:KineticEnergy.Ships.Blocks.Block"/> objects on the ship.
+            </summary>
+        </member>
+        <member name="P:KineticEnergy.Ships.BlockGrid.Mass">
+            <summary>
+            The sum of every <see cref="P:KineticEnergy.Ships.Blocks.Block.Mass"/>. Updates <see cref="P:UnityEngine.Rigidbody.mass"/> when set (internal). Nothing becides "return" is done on get.
+            </summary>
+            <remarks>
+            This value is never changed by the <see cref="T:KineticEnergy.Ships.BlockGrid"/> script.
+            Instead, the <see cref="T:KineticEnergy.Ships.Blocks.Block"/> script updates it on <see cref="M:KineticEnergy.Ships.Blocks.Block.SetGrid(KineticEnergy.Ships.BlockGrid,UnityEngine.Vector3Int)"/> and when set-ing <see cref="P:KineticEnergy.Ships.Blocks.Block.Mass"/>.
+            </remarks>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGrid.offset">
+            <summary>
+            array space --> grid space
+            <para/>
+            Any array position minus <see cref="F:KineticEnergy.Ships.BlockGrid.offset"/> is the position in the grid.
+            Any grid position plus <see cref="F:KineticEnergy.Ships.BlockGrid.offset"/> is the position in the array.
+            </summary>
+            <remarks>
+            Grid-space is essentially the local position to the parent <see cref="T:KineticEnergy.Ships.BlockGrid"/>'s <see cref="T:UnityEngine.GameObject"/>.
+            Meanwhile, array-space, since its index cannot be negative, needs to have its origin at the "most-negative corner" of grid-space.
+            </remarks>
+        </member>
+        <member name="P:KineticEnergy.Ships.BlockGrid.Size">
+            <summary>
+            The size/dimensions of the 3-dimensional array, <see cref="F:KineticEnergy.Ships.BlockGrid.array"/>.
+            Calls <see cref="M:System.Array.GetLength(System.Int32)"/> three times.
+            </summary>
+        </member>
+        <member name="P:KineticEnergy.Ships.BlockGrid.Item(UnityEngine.Vector3Int)">
+            <summary>
+            A simple "get" function for an array-space point. To get the grid space, add <see cref="F:KineticEnergy.Ships.BlockGrid.offset"/> to the input.
+            <para/>
+            <c>return <see cref="F:KineticEnergy.Ships.BlockGrid.array"/>[index.x, index.y, index.z];</c>
+            </summary>
+            <param name="index">The index to look at.</param>
+            <returns>Returns the <see cref="T:KineticEnergy.Ships.Blocks.Block"/> that overlaps at the given point of the grid.</returns>
+            <remarks>
+            Remember that this is array space.
+            </remarks>
+            <seealso cref="P:KineticEnergy.Ships.BlockGrid.Item(System.Int32,System.Int32,System.Int32)"/>
+        </member>
+        <member name="P:KineticEnergy.Ships.BlockGrid.Item(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            A simple "get" function for an array-space point. To get the grid space, add <see cref="F:KineticEnergy.Ships.BlockGrid.offset"/> to the input.
+            <para/>
+            <c>return <see cref="F:KineticEnergy.Ships.BlockGrid.array"/>[x, y, z];</c>
+            </summary>
+            <param name="x">The X index to look at.</param>
+            <param name="y">The Y index to look at.</param>
+            <param name="z">The Z index to look at.</param>
+            <returns>
+            Returns the <see cref="T:KineticEnergy.Ships.Blocks.Block"/> that overlaps at the given point of the grid.
+            </returns>
+            <seealso cref="P:KineticEnergy.Ships.BlockGrid.Item(UnityEngine.Vector3Int)"/>
+        </member>
+        <member name="P:KineticEnergy.Ships.BlockGrid.rigidbody">
+            <summary>The <see cref="T:UnityEngine.Rigidbody"/> of this <see cref="T:KineticEnergy.Ships.BlockGrid"/>.</summary>
+        </member>
+        <member name="P:KineticEnergy.Ships.BlockGrid.Rigidbody">
+            <summary><see cref="P:KineticEnergy.Ships.BlockGrid.rigidbody"/> but with a Unity.Object null-check.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.GridPointIsInsideArray(UnityEngine.Vector3Int)">
+            <summary>
+            Finds if the given point in grid space is within the bounries of the array.
+            </summary>
+            <param name="gridPosition">Some point in grid space.</param>
+            <returns>
+            Adds <see cref="F:KineticEnergy.Ships.BlockGrid.offset"/>, then returns true if 'x', 'y', and 'z' are greater than -1 and less than the <see cref="M:System.Array.GetLength(System.Int32)"/> [0 through 2].
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.ArrayPointIsInsideArray(UnityEngine.Vector3Int)">
+            <summary>
+            Checks if the given point in array space is within the boundries of the array.
+            </summary>
+            <param name="arrayPosition">Some point in array space.</param>
+            <returns>
+            Returns true if 'x', 'y', and 'z' are greater than -1 and less than the <see cref="M:System.Array.GetLength(System.Int32)"/> [0 through 2].
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.CanPlaceBlock(KineticEnergy.Ships.Blocks.Block,UnityEngine.Vector3Int)">
+            <summary>
+            Tests if a <see cref="T:KineticEnergy.Ships.Blocks.Block"/> can fit at the given position.
+            </summary>
+            <param name="block">The would-be <see cref="T:KineticEnergy.Ships.Blocks.Block"/>.</param>
+            <param name="gridPosition">Position, in grid space, of the would-be <see cref="T:KineticEnergy.Ships.Blocks.Block"/>.</param>
+            <returns>
+            Returns true if <see cref="M:KineticEnergy.Ships.BlockGrid.HasBlockAt(UnityEngine.Vector3Int)"/> is true for every grid position inside the block.
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.HasBlockAt(UnityEngine.Vector3Int)">
+            <summary>
+            Checks if there is any block at the given position in the grid.
+            </summary>
+            <remarks>
+            Subject to <see cref="T:System.IndexOutOfRangeException"/> errors when <see cref="M:KineticEnergy.Ships.BlockGrid.GridPointIsInsideArray(UnityEngine.Vector3Int)"/> is false.
+            </remarks>
+            <param name="gridPosition">Position in the grid to check.</param>
+            <returns>Returns true if there is a block at the given position.</returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.TryHasBlockAt(UnityEngine.Vector3Int)">
+            <summary>
+            Same functionality as <see cref="M:KineticEnergy.Ships.BlockGrid.HasBlockAt(UnityEngine.Vector3Int)"/>, but runs <see cref="M:KineticEnergy.Ships.BlockGrid.GridPointIsInsideArray(UnityEngine.Vector3Int)"/> first so it is not subject to <see cref="T:System.IndexOutOfRangeException"/> errors.
+            </summary>
+            <param name="gridPosition">Position in the grid to check.</param>
+            <returns>Returns false if 'InsideGrid(position)' fails, otherwise returns 'HasBlock(position)'.</returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.GetBlockAt(UnityEngine.Vector3Int)">
+            <summary>Finds the block at the given position in the grid.</summary>
+            <param name="gridPosition">Position in the grid to look at.</param>
+            <returns>Returns the appropirate block if there is one, otherwise returns null.</returns>
+            <remarks>Subject to <see cref="T:System.IndexOutOfRangeException"/> errors when <see cref="M:KineticEnergy.Ships.BlockGrid.GridPointIsInsideArray(UnityEngine.Vector3Int)"/> is false.</remarks>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.TryGetBlockAt(UnityEngine.Vector3Int)">
+            <summary>Same functionality as <see cref="M:KineticEnergy.Ships.BlockGrid.GetBlockAt(UnityEngine.Vector3Int)"/>, but is not subject to <see cref="T:System.IndexOutOfRangeException"/> errors.</summary>
+            <param name="gridPosition">The position in the grid to check.</param>
+            <returns>Returns null if <see cref="M:KineticEnergy.Ships.BlockGrid.GridPointIsInsideArray(UnityEngine.Vector3Int)"/> fails, otherwise returns <see cref="M:KineticEnergy.Ships.BlockGrid.GetBlockAt(UnityEngine.Vector3Int)"/>.</returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.TryGetBlockAt(UnityEngine.Vector3)">
+            <summary>Uses <see cref="M:KineticEnergy.Ships.BlockGrid.LocalPointToGrid(UnityEngine.Vector3)"/> to call <see cref="M:KineticEnergy.Ships.BlockGrid.TryGetBlockAt(UnityEngine.Vector3)"/>.</summary>
+            <param name="localPosition">The position in the grid's transform to check.</param>
+            <returns>Returns null if <see cref="M:KineticEnergy.Ships.BlockGrid.GridPointIsInsideArray(UnityEngine.Vector3Int)"/> fails, otherwise returns <see cref="M:KineticEnergy.Ships.BlockGrid.GetBlockAt(UnityEngine.Vector3Int)"/>.</returns>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGrid.neighborVectors">
+            <summary>A set of vectors that define all neighbors that are next to, and relative to, a 1x1x1 block.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.GetNeighborsAt(UnityEngine.Vector3Int)">
+            <summary>
+            Finds the neighboring blocks that are next to the given grid position.
+            </summary>
+            <param name="gridPosition">Position in the grid to look at.</param>
+            <returns>Returns a <see cref="T:KineticEnergy.Ships.Blocks.Block"/> array that may contain null values and reapeats.</returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.GetUniqueNeighborsAt(UnityEngine.Vector3Int)">
+            <summary>
+            Has the same functionallity as <see cref="M:KineticEnergy.Ships.BlockGrid.GetNeighborsAt(UnityEngine.Vector3Int)"/>, but does not contain repeats or null values.
+            </summary>
+            <param name="position">Position in the grid to look at.</param>
+            <returns>Returns a <see cref="T:KineticEnergy.Ships.Blocks.Block"/> array.</returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.LocalPointToGrid(UnityEngine.Vector3)">
+            <summary>
+            Converts a local point into grid space for this <see cref="T:KineticEnergy.Ships.BlockGrid"/>.
+            </summary>
+            <param name="localPoint">Some point local to this object's transform.</param>
+            <returns>
+            Returns a <see cref="T:UnityEngine.Vector3Int"/> that represents a point in grid space.
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.WorldPointToGrid(UnityEngine.Vector3)">
+            <summary>
+            Converts a world point into grid space for this <see cref="T:KineticEnergy.Ships.BlockGrid"/>.
+            </summary>
+            <param name="worldPoint">Some point in the world.</param>
+            <returns>
+            Returns a <see cref="T:UnityEngine.Vector3Int"/> that represents a point in grid space.
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.AlignWorldPoint(UnityEngine.Vector3)">
+            <summary>
+            Aligns the given world point to the grid.
+            </summary>
+            <param name="worldPoint">Some point in the world.</param>
+            <returns>
+            Returns a <see cref="T:UnityEngine.Vector3"/> that represents a grid point in world space.
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.GridPointToLocal(UnityEngine.Vector3Int)">
+            <summary>
+            Converts a point on this <see cref="T:KineticEnergy.Ships.BlockGrid"/>'s grid space into local space.
+            </summary>
+            <param name="gridPoint">Some coordinate on the grid.</param>
+            <returns>
+            Returns a <see cref="T:UnityEngine.Vector3"/> that represents a point in local space.
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.GridPointToWorld(UnityEngine.Vector3Int)">
+            <summary>
+            Converts a point on this <see cref="T:KineticEnergy.Ships.BlockGrid"/>'s grid space into world space.
+            </summary>
+            <param name="gridPoint">Some coordinate on the grid.</param>
+            <returns>
+            Returns a <see cref="T:UnityEngine.Vector3"/> that represents a point in world space.
+            </returns>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.PlaceBlock(KineticEnergy.Ships.Blocks.Block,UnityEngine.Vector3Int)">
+            <summary>
+            Places a block at the given position in the grid.
+            </summary>
+            <remarks>
+            Subject to clipping if <see cref="M:KineticEnergy.Ships.BlockGrid.CanPlaceBlock(KineticEnergy.Ships.Blocks.Block,UnityEngine.Vector3Int)"/> is false.
+            </remarks>
+            <param name="block"><see cref="T:KineticEnergy.Ships.Blocks.Block"/> to place.</param>
+            <param name="gridPosition">Grid position to place the block at.</param>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.PlaceNewBlock(UnityEngine.GameObject,UnityEngine.Vector3Int,UnityEngine.Quaternion)">
+            <summary>
+            Instantiates a prefab, defines important values such as transform data and name then calls <see cref="M:KineticEnergy.Ships.Blocks.Block.GetDimensionInformation"/>,
+            then places it on the grid at the given position with <see cref="M:KineticEnergy.Ships.BlockGrid.PlaceBlock(KineticEnergy.Ships.Blocks.Block,UnityEngine.Vector3Int)"/>.
+            </summary>
+            <remarks>
+            Subject to clipping if <see cref="M:KineticEnergy.Ships.BlockGrid.CanPlaceBlock(KineticEnergy.Ships.Blocks.Block,UnityEngine.Vector3Int)"/> is false.
+            </remarks>
+            <param name="prefab">Prefab of the "blank" GameObject.</param>
+            <param name="gridPosition">Grid position to place the block at.</param>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.PlaceEnablingBlock(KineticEnergy.Ships.Blocks.Block,UnityEngine.Vector3Int)">
+            <summary>
+            When a <see cref="T:KineticEnergy.Ships.Blocks.Block"/> is disabled, it is removed from the grid. When it is enabled it is re-added through this function.
+            </summary>
+            <param name="block">The block that is being enabled.</param>
+            <param name="gridPosition">The position in the grid that the block is in.</param>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.ExpandArrayDimensions(UnityEngine.Vector3Int)">
+            <summary>
+            Expands the <see cref="F:KineticEnergy.Ships.BlockGrid.array"/> by the given amount. The sign of the inputs are the direction to expand the grid.
+            </summary>
+            <param name="amount">Amount to increase the size of <see cref="F:KineticEnergy.Ships.BlockGrid.array"/> in each axis direction.</param>
+            <remarks>
+            Since an <see cref="T:System.Int32"/> can only have one sign, <see cref="M:KineticEnergy.Ships.BlockGrid.ExpandArrayDimensions(UnityEngine.Vector3Int)"/> cannot expand the grid in, for example, +x and -x at the same time.
+            </remarks>
+            <seealso cref="M:KineticEnergy.Ships.BlockGrid.ChangeArrayDimensions(UnityEngine.Vector3Int,UnityEngine.Vector3Int)"/>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.ChangeArrayDimensions(UnityEngine.Vector3Int,UnityEngine.Vector3Int)">
+            <summary>
+            Expands the <see cref="F:KineticEnergy.Ships.BlockGrid.array"/> by the given amounts.
+            All values of "amountPos" should be zero or positive and all values of amountNeg should be zero or negative.
+            </summary>
+            <param name="amountPos">Amount to increase the size of <see cref="F:KineticEnergy.Ships.BlockGrid.array"/> in each positive axis direction.</param>
+            <param name="amountNeg">Amount to increase the size of <see cref="F:KineticEnergy.Ships.BlockGrid.array"/> in each negative axis direction.</param>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Returns an object to be iterated through.
+            </summary>
+            <returns>
+            Returns an <see cref="T:System.Collections.IEnumerator"/>.
+            </returns>
+        </member>
+        <member name="T:KineticEnergy.Ships.BlockGrid.BlockOverlapException">
+            <summary>
+            Exception for when a <see cref="T:KineticEnergy.Ships.Blocks.Block"/> was about to be / was overlapped by another <see cref="T:KineticEnergy.Ships.Blocks.Block"/> in <see cref="F:KineticEnergy.Ships.BlockGrid.array"/>.
+            </summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.BlockGrid.BlockOverlapException.#ctor(KineticEnergy.Ships.BlockGrid,UnityEngine.Vector3Int,KineticEnergy.Ships.Blocks.Block,KineticEnergy.Ships.Blocks.Block,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Creates an error message:
+            <para/>
+            "The Block "[native.gameObject.name]" in the "[grid.gameObject.name]" BlockGrid was trying to overlap the Block "[native.gameObject.name]"
+            at the grid point [arrayPosition + grid.offset] / array point [arrayPosition]. Check for 'ghost' blocks."
+            <para/>
+            stoppedCompletely ? "This was interrupted before any data in the BlockGrid.array was changed."
+            <para/>
+             : stoppedOverwrite ? "Although existing data was not changed, data on empty points of the grid may have been."
+            <para/>
+            tryToFix ? "An attempt at a fix has been made."
+            </summary>
+            <param name="grid">The grid where this overlap happened.</param>
+            <param name="arrayPosition">The position in the array where this overlap happened.</param>
+            <param name="native">The block that was/would've been overlapped.</param>
+            <param name="intruder">The block that (would've) been the one overlapping.</param>
+            <param name="stoppedOverwrite">Was this stopped before data in <see cref="F:KineticEnergy.Ships.BlockGrid.array"/> was changed?</param>
+            <param name="stoppedCompletely">Was this stopped before ANY data in <see cref="F:KineticEnergy.Ships.BlockGrid.array"/> was changed?</param>
+            <param name="tryToFix">O(n) operation, where n = volume. Removes all refrences to the block on the affected grid, then Destroys the block.</param>
+        </member>
+        <member name="T:KineticEnergy.Ships.Mass">
+            <summary>
+            Represents a center and magnitude of mass.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.Mass.magnitude">
+            <summary>The magnitude of this mass.</summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.Mass.position">
+            <summary>The local position of this mass.</summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.Mass.zero">
+            <summary>Shorthand for "<c>new Mass(0, Vector3.zero)</c>".</summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.Mass.one">
+            <summary>Shorthand for "<c>new Mass(1, Vector3.zero)</c>".</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Addition(KineticEnergy.Ships.Mass,KineticEnergy.Ships.Mass)">
+            <summary>An addition operator that avoids overflow by checking if the result is less than either of the original values.
+            If there is an overflow, the result will be <see cref="F:System.UInt64.MaxValue"/>.
+            <para/>Also gives the appropriate <see cref="F:KineticEnergy.Ships.Mass.position"/> to the return value.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Addition(KineticEnergy.Ships.Mass,System.UInt64)">
+            <summary>An addition operator that avoids overflow by checking if the result is less than either of the original values.
+            If there is an overflow, the result will be <see cref="F:System.UInt64.MaxValue"/>.
+            <para/>The <see cref="F:KineticEnergy.Ships.Mass.position"/> does not change.</summary>
+            <remarks>There is no mirroring "<c>+(ulong value, Mass mass)</c>" because it makes sense to add a number to a weighted position, but not to add a weighted position to a number.</remarks>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Addition(KineticEnergy.Ships.Mass,UnityEngine.Vector3)">
+            <summary>Shifts the center of mass by the given vector through addition.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Subtraction(KineticEnergy.Ships.Mass,KineticEnergy.Ships.Mass)">
+            <summary>A subtraction operator that avoids underflow by checking if the result is greater than either of the original values.
+            If there is an underflow, the result will be <see cref="F:System.UInt64.MinValue"/>.
+            <para/>Also gives the appropriate <see cref="F:KineticEnergy.Ships.Mass.position"/> to the return value.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Subtraction(KineticEnergy.Ships.Mass,System.UInt64)">
+            <summary>A subtraction operator that avoids underflow by checking if the result is greater than either of the original values.
+            If there is an underflow, the result will be <see cref="F:System.UInt64.MinValue"/>.
+            <para/>The <see cref="F:KineticEnergy.Ships.Mass.position"/> does not change.</summary>
+            <remarks>There is no mirroring "<c>-(ulong value, Mass mass)</c>" because it makes sense to subtract a number from a weighted position, but not to subtract a weighted position from a number.</remarks>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Subtraction(KineticEnergy.Ships.Mass,UnityEngine.Vector3)">
+            <summary>Shifts the center of mass by the given vector through subtraction.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Multiply(KineticEnergy.Ships.Mass,System.UInt64)">
+            <summary>A multiplication operator that avoids overflow by checking if the result is less than either of the original values.
+            If there is an overflow, the result will be <see cref="F:System.UInt64.MaxValue"/>.
+            <para/>The <see cref="F:KineticEnergy.Ships.Mass.position"/> does not change.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Division(KineticEnergy.Ships.Mass,System.UInt64)">
+            <summary>A division operator that avoids underflow by checking if the result is greater than either of the original values.
+            If there is an underflow, the result will be <see cref="F:System.UInt64.MinValue"/>.
+            <para/>The <see cref="F:KineticEnergy.Ships.Mass.position"/> does not change.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_LessThan(KineticEnergy.Ships.Mass,KineticEnergy.Ships.Mass)">
+            <summary>Compares the two <see cref="F:KineticEnergy.Ships.Mass.magnitude"/>s.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_GreaterThan(KineticEnergy.Ships.Mass,KineticEnergy.Ships.Mass)">
+            <summary>Compares the two <see cref="F:KineticEnergy.Ships.Mass.magnitude"/>s.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Equality(KineticEnergy.Ships.Mass,KineticEnergy.Ships.Mass)">
+            <summary>Checks if both given <see cref="T:KineticEnergy.Ships.Mass"/> objects have equal <see cref="F:KineticEnergy.Ships.Mass.magnitude"/>s and equal <see cref="F:KineticEnergy.Ships.Mass.position"/>s.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.op_Inequality(KineticEnergy.Ships.Mass,KineticEnergy.Ships.Mass)">
+            <summary>Checks if both given <see cref="T:KineticEnergy.Ships.Mass"/> objects have unequal <see cref="F:KineticEnergy.Ships.Mass.magnitude"/>s or unequal <see cref="F:KineticEnergy.Ships.Mass.position"/>s.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.Equals(System.Object)">
+            <summary>Auto-generated by Visual Studio.</summary>
+        </member>
+        <member name="M:KineticEnergy.Ships.Mass.GetHashCode">
+            <summary>Auto-generated by Visual Studio.</summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGridEditor.distance">
+            <summary>
+            The maximum distance from the camera the should be placed at.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGridEditor.hitError">
+            <summary>
+            Expected error of raycasting into the grid.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGridEditor.preview">
+            <summary>
+            Current <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/> that is being moved around.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGridEditor.rotation">
+            <summary>The rotation of this block relative to the grid.</summary>
+        </member>
+        <member name="T:KineticEnergy.Ships.BlockGridSceneEditor">
+            <summary>
+            A modified <see cref="T:KineticEnergy.Ships.BlockGridEditor"/> for use in Unity's scene view.
+            </summary>
+            <remarks>
+            Currently not tested for multiple scene views.
+            </remarks>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGridSceneEditor.distance">
+            <summary>The maximum distance from the camera the should be placed at.</summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGridSceneEditor.hitError">
+            <summary>Expected error of raycasting into the grid.</summary>
+        </member>
+        <member name="F:KineticEnergy.Ships.BlockGridSceneEditor.selectedBlock">
+            <summary>Current <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/> that is being moved around.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientBehavioursManager.parents">
+            <summary>An array of <see cref="T:UnityEngine.GameObject"/>s that, combined, have all <see cref="T:KineticEnergy.Intangibles.Client.ClientBehaviour"/>s.</summary>
+        </member>
+        <member name="P:KineticEnergy.Intangibles.Client.ClientBehavioursManager.GlobalBehaviours">
+            <summary>Finds all <see cref="T:KineticEnergy.Intangibles.Client.ClientBehaviour"/>s from <see cref="F:KineticEnergy.Intangibles.Client.ClientBehavioursManager.parents"/>.</summary>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Client.ClientManager">
+            <summary>One of these exist on each user's computer to send messages to the server simulation.
+            Should not exist on the server simulation.</summary>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Client.ClientData">
+            <summary>Represents a user that is connected to the server.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.id">
+            <summary>The id of this <see cref="T:KineticEnergy.Intangibles.Client.ClientData"/>.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.name">
+            <summary>The display name of this <see cref="T:KineticEnergy.Intangibles.Client.ClientData"/>.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.inputs">
+            <summary>The inputs this <see cref="T:KineticEnergy.Intangibles.Client.ClientData"/> is sending,
+            directed by its associated <see cref="T:KineticEnergy.Intangibles.Client.ClientManager"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Intangibles.Client.ClientData.#ctor(System.Int32,System.String)">
+            <summary>Creates a new <see cref="T:KineticEnergy.Intangibles.Client.ClientData"/> with the given properties.</summary>
+            <param name="id">The <see cref="F:KineticEnergy.Intangibles.Client.ClientData.id"/> of the new <see cref="T:KineticEnergy.Intangibles.Client.ClientData"/>.</param>
+            <param name="name">The <see cref="F:KineticEnergy.Intangibles.Client.ClientData.name"/> of the new <see cref="T:KineticEnergy.Intangibles.Client.ClientData"/>.</param>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Client.ClientData.Inputs">
+            <summary>Contains the inputs that a <see cref="T:KineticEnergy.Intangibles.Client.ClientData"/> is sending.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.Inputs.move">
+            <summary>Move character or ship.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.Inputs.look">
+            <summary>Look camera or ship.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.Inputs.spin">
+            <summary>Spin item in hand, such as block.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.Inputs.hotbar">
+            <summary>Index of hotbar selection.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.Inputs.primary">
+            <summary>Primary button pressed.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Client.ClientData.Inputs.secondary">
+            <summary>Secondary button pressed.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Global.GlobalBehavioursManager.parents">
+            <summary>An array of <see cref="T:UnityEngine.GameObject"/>s that, combined, have all <see cref="T:KineticEnergy.Intangibles.Global.GlobalBehaviour"/>s.</summary>
+        </member>
+        <member name="P:KineticEnergy.Intangibles.Global.GlobalBehavioursManager.GlobalBehaviours">
+            <summary>Finds all <see cref="T:KineticEnergy.Intangibles.Global.GlobalBehaviour"/>s from <see cref="F:KineticEnergy.Intangibles.Global.GlobalBehavioursManager.parents"/>.</summary>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Global.GlobalPaletteManager">
+            <summary>
+            Stores and manages the one and only <see cref="T:KineticEnergy.Intangibles.Global.BlockPalette"/>.
+            </summary>
+            <remarks>
+            Comtains implicit cast operator from <see cref="T:KineticEnergy.Intangibles.Global.GlobalPaletteManager"/> and <see cref="T:KineticEnergy.Intangibles.Global.BlockPalette"/>.
+            </remarks>
+            <seealso cref="T:KineticEnergy.Intangibles.Global.BlockPalette"/>
+            <seealso cref="T:KineticEnergy.Intangibles.Global.ColorPalette"/>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Global.BlockPalette">
+            <summary>An object that contains a list of <see cref="T:KineticEnergy.Intangibles.Global.BlockPalette.Sample"/>s.</summary>
+            <remarks>Extends <see cref="T:System.Collections.IEnumerable"/>.</remarks>
+            <seealso cref="T:KineticEnergy.Intangibles.Global.GlobalPaletteManager"/>
+            <seealso cref="T:KineticEnergy.Intangibles.Global.BlockPalette.Sample"/>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Global.BlockPalette.samples">
+            <summary>A <see cref="T:System.Collections.Generic.List`1"/> of <see cref="T:KineticEnergy.Intangibles.Global.BlockPalette.Sample"/>s.</summary>
+        </member>
+        <member name="P:KineticEnergy.Intangibles.Global.BlockPalette.Item(System.Int32)">
+            <summary>A simple "get" function for <see cref="F:KineticEnergy.Intangibles.Global.BlockPalette.samples"/>.
+            <para/><c>return <see cref="F:KineticEnergy.Intangibles.Global.BlockPalette.samples"/>[index];</c></summary>
+            <param name="index">The index to look at.</param>
+            <returns>Returns the <see cref="T:KineticEnergy.Intangibles.Global.BlockPalette.Sample"/> at the given index.</returns>
+        </member>
+        <member name="M:KineticEnergy.Intangibles.Global.BlockPalette.Add(KineticEnergy.Intangibles.Global.BlockPalette.Sample)">
+            <summary>Adds a <see cref="T:KineticEnergy.Intangibles.Global.BlockPalette.Sample"/> to <see cref="F:KineticEnergy.Intangibles.Global.BlockPalette.samples"/>.</summary>
+            <param name="blockSample">The <see cref="T:KineticEnergy.Intangibles.Global.BlockPalette.Sample"/> to add to <see cref="F:KineticEnergy.Intangibles.Global.BlockPalette.samples"/>.</param>
+        </member>
+        <member name="P:KineticEnergy.Intangibles.Global.BlockPalette.Count">
+            <summary>The <see cref="P:System.Collections.Generic.List`1.Count"/> for <see cref="F:KineticEnergy.Intangibles.Global.BlockPalette.samples"/>.</summary>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Global.BlockPalette.Sample">
+            <summary>A class for containing a <see cref="T:KineticEnergy.Ships.Blocks.Block"/> prefab and it's respective <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/> prefab.</summary>
+            <seealso cref="T:KineticEnergy.Intangibles.Global.GlobalPaletteManager"/>
+            <seealso cref="T:KineticEnergy.Intangibles.Global.BlockPalette"/>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Global.BlockPalette.Sample.prefabBlock">
+            <summary>The prefab that will be cloned with <see cref="!:Object.Instantiate()"/>.</summary>
+            <see cref="T:KineticEnergy.Ships.Blocks.Block"/>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Global.BlockPalette.Sample.prefabBlock_preview">
+            <summary>The prefab variant of the <see cref="F:KineticEnergy.Intangibles.Global.BlockPalette.Sample.prefabBlock"/>.</summary>
+            <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/>
+        </member>
+        <member name="M:KineticEnergy.Intangibles.Global.BlockPalette.Sample.#ctor(UnityEngine.GameObject,UnityEngine.GameObject)">
+            <summary>Creates a new <see cref="T:KineticEnergy.Intangibles.Global.BlockPalette.Sample"/> from the given arguments.</summary>
+            <param name="prefabBlock">The prefab variant of the <see cref="F:KineticEnergy.Intangibles.Global.BlockPalette.Sample.prefabBlock"/>.</param>
+            <param name="b\lockPrefab_preview\lockPrefab_preview">The prefab that will be cloned with <see cref="!:Object.Instantiate()"/></param>
+            <see cref="T:KineticEnergy.Ships.Blocks.Block"/>
+            <see cref="T:KineticEnergy.Ships.Blocks.BlockPreview"/>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Global.ColorPalette">
+            <summary>An object that contains a list of <see cref="T:KineticEnergy.Intangibles.Global.ColorPalette.Sample"/>s.</summary>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Global.ColorPalette.samples">
+            <summary>An array of <see cref="T:KineticEnergy.Intangibles.Global.ColorPalette.Sample"/>s.</summary>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Global.ColorPalette.Sample">
+            <summary>A named color.</summary>
+            <seealso cref="T:KineticEnergy.Intangibles.Global.GlobalPaletteManager"/>
+            <seealso cref="T:KineticEnergy.Intangibles.Global.ColorPalette"/>
+        </member>
+        <member name="P:KineticEnergy.Intangibles.Global.ColorPalette.Item(System.Int32)">
+            <summary>A simple "get" function for <see cref="F:KineticEnergy.Intangibles.Global.ColorPalette.samples"/>.
+            <para/><c>return <see cref="F:KineticEnergy.Intangibles.Global.ColorPalette.samples"/>[index];</c></summary>
+            <param name="index">The index to look at.</param>
+            <returns>Returns the <see cref="T:KineticEnergy.Intangibles.Global.ColorPalette.Sample"/> at the given index.</returns>
+        </member>
+        <member name="M:KineticEnergy.Intangibles.Global.ColorPalette.#ctor(System.Int32)">
+            <summary>Creates a <see cref="T:KineticEnergy.Intangibles.Global.ColorPalette"/> with the given capacity.</summary>
+            <param name="capacity">Capacity for <see cref="F:KineticEnergy.Intangibles.Global.ColorPalette.samples"/>.</param>
+        </member>
+        <member name="M:KineticEnergy.Intangibles.Global.ColorPalette.Get(System.String,UnityEngine.Color@)">
+            <summary>Retreives a <see cref="T:UnityEngine.Color"/> by name.</summary>
+            <param name="name">Name of the <see cref="T:KineticEnergy.Intangibles.Global.ColorPalette.Sample"/> to get.</param>
+            <param name="color">The color that was found. Defaults to <see cref="P:UnityEngine.Color.clear"/>.</param>
+            <returns>Returns if any color was found.</returns>
+        </member>
+        <member name="F:KineticEnergy.Intangibles.Server.ServerBehavioursManager.parents">
+            <summary>An array of <see cref="T:UnityEngine.GameObject"/>s that, combined, have all <see cref="T:KineticEnergy.Intangibles.Server.ServerBehaviour"/>s.</summary>
+        </member>
+        <member name="P:KineticEnergy.Intangibles.Server.ServerBehavioursManager.GlobalBehaviours">
+            <summary>Finds all <see cref="T:KineticEnergy.Intangibles.Server.ServerBehaviour"/>s from <see cref="F:KineticEnergy.Intangibles.Server.ServerBehavioursManager.parents"/>.</summary>
+        </member>
+        <member name="T:KineticEnergy.Intangibles.Server.ServerManager">
+            <summary>Manages connection between the simulation and the <see cref="T:KineticEnergy.Intangibles.Client.ClientData"/>s.</summary>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry">
+            <summary>
+            A collection of math functions related to Geometry.
+            </summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LinearDirection(System.Single)">
+            <summary>
+            On a 1-Dimentional line, the direction from X1 to X2 is equal to the sign of the difference: X2 - X1.
+            </summary>
+            <param name="input">X1 - X2</param>
+            <returns>Returns the sign of the input (-1 or +1).</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LinearDirection(System.Single,KineticEnergy.CodeTools.Math.Geometry.Axis)">
+            <summary>
+            On a 1-Dimentional line, the direction from X1 to X2 is equal to the sign of the input.
+            </summary>
+            <param name="input">X1 - X2</param>
+            <returns>Returns the sign of the input (-1 or +1).</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LinearDirection(UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Axis)">
+            <summary>
+            Gives which direction the vector is more facing on the given axis.
+            </summary>
+            <param name="vector">The vector to compare with the given axis.</param>
+            <param name="axis">The axis to compare the given vector to.</param>
+            <returns>Returns the sign of the input (-1 or +1).</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.AngleDirection(KineticEnergy.CodeTools.Math.Geometry.Angle,KineticEnergy.CodeTools.Math.Geometry.Axis)">
+            <summary>
+            Gives the Geometry.Direction of an angle relative to the given Geometry.Axis.
+            </summary>
+            <param name="angle">The input angle in degrees.</param>
+            <param name="axis">The axis to make the output direction relative to.</param>
+            <returns>Axis.Horizontal relates to Quadrant 1 and 2 for positive. Axis.Vertical relates to Quadrant 1 and 4 for positive.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.AreParallel(KineticEnergy.CodeTools.Math.Geometry.Line,KineticEnergy.CodeTools.Math.Geometry.Line)">
+            <summary>
+            Are these two lines parallel?
+            </summary>
+            <returns>Returns 'true' if (l1.a * l2.b) - (l2.a * l1.b) == 0.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Exists(System.Single)">
+            <summary>
+            Determines if the given value exists.
+            </summary>
+            <returns>Returns 'true' if the number is not Infinity and is not NaN.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Exists(UnityEngine.Vector2)">
+            <summary>
+            Determines if the given value exists.
+            </summary>
+            <returns>Returns 'true' if the components are not Infinity nor NaN.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.IsBetweenRange(System.Single,System.Single)">
+            <summary>
+            Checks if the input is on the interval [-range, +range].
+            </summary>
+            <param name="range">[-range, +range]</param>
+            <returns>Returns true if input is on the interval [-range, +range]</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.NormalizeDegree1(System.Single)">
+            <summary>
+            Normalizes an angle on the interval [0, 360].
+            </summary>
+            <param name="degr">Input angle in degrees.</param>
+            <returns>Returns an equivalent angle on the interval [0, 360].</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.NormalizeDegree2(System.Single)">
+            <summary>
+            Normalizes an angle on the interval [-360, +360].
+            </summary>
+            <param name="degr">Input angle in degrees.</param>
+            <returns>Returns an equivalent angle on the interval [-360, +360].</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.NormalizeDegree3(System.Single)">
+            <summary>
+            Normalizes an angle on the interval [-180, +180]
+            </summary>
+            <param name="degree">Input angle in degrees.</param>
+            <returns>Returns an equivalent angle on the interval [-180, +180].</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.RoundToMultiple(System.Single,System.Single)">
+            <summary>
+            Rounds the given number to the nearest multiple of another number.
+            </summary>
+            <param name="number">Input number.</param>
+            <param name="multiple">Input number will be rounded to some (multiple * n).</param>
+            <returns>Returns the multiple closest to number.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.GetAngle(UnityEngine.Vector2,UnityEngine.Vector2)">
+            <summary>
+            Returns the angle between v1 and v2 with respect to the X/Y axies.
+            </summary>
+            <param name="v1">Vector 1 (angle from)</param>
+            <param name="v2">Vector 2 (angle to)</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LineFromTwoPoints(UnityEngine.Vector2,UnityEngine.Vector2)">
+            <summary>
+            Generates a line given two points.
+            </summary>
+            <param name="p1">Point 1</param>
+            <param name="p2">Point 2</param>
+            <returns>Returns a line that intersects the two given points.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LineFromAngle(UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Angle)">
+            <summary>
+            Generates a line given one point and an angle.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LineFromShift(UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Line)">
+            <summary>
+            Generates a line identical to the original, but shifted left/right by distance.
+            </summary>
+            <param name="distance"></param>
+            <param name="line"></param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LawOfCosForAngleA(System.Single,System.Single,System.Single)">
+            <summary>
+            Uses the Law of Cosines to find an angle of a triangle given only the side lenghs.
+            </summary>
+            <param name="a">Side length A.</param>
+            <param name="b">Side length B.</param>
+            <param name="c">Side length C.</param>
+            <returns>Returns the angle opposite of side a.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LawOfCosForAngleB(System.Single,System.Single,System.Single)">
+            <summary>
+            Uses the Law of Cosines to find an angle of a triangle given only the side lenghs.
+            </summary>
+            <param name="a">Side length A.</param>
+            <param name="b">Side length B.</param>
+            <param name="c">Side length C.</param>
+            <returns>Returns the angle opposite of side b.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LawOfCosForAngleC(System.Single,System.Single,System.Single)">
+            <summary>
+            Uses the Law of Cosines to find an angle of a triangle given only the side lenghs.
+            </summary>
+            <param name="a">Side length A.</param>
+            <param name="b">Side length B.</param>
+            <param name="c">Side length C.</param>
+            <returns>Returns the angle opposite of side c.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Vector2FromAngle(KineticEnergy.CodeTools.Math.Geometry.Angle,System.Single)">
+            <summary>
+            Creates a new Vector2 with the given angle and magnitude.
+            </summary>
+            <param name="angle">The angle of the vector. Specify degrees or radians with 'units'.</param>
+            <param name="magnitude">The magnitude of the vector.</param>
+            <param name="units">Is the angle in degrees or radians?</param>
+            <returns>Returns 'new Vector2(Cos(radians) * magnitude, Sin(radians) * magnitude)'</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Vector2FromAngle(KineticEnergy.CodeTools.Math.Geometry.Angle)">
+            <summary>
+            Creates a new Vector2 with the given angle and a magnitude of 1.
+            </summary>
+            <param name="angle">The angle of the vector. Specify degrees or radians with 'units'.</param>
+            <param name="units">Is the angle in degrees or radians?</param>
+            <returns>Returns 'new Vector2(Cos(radians) * magnitude, Sin(radians) * magnitude)'</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.HeadToTailAngle(UnityEngine.Vector2,UnityEngine.Vector2)">
+            <summary>
+            Finds the angle between v1 and v2 if v2's tail is placed on the head of v1.
+            This angle can also be described as finding the angle of a bend in a line.
+            </summary>
+            <param name="v1">The first vector in the angle.</param>
+            <param name="v2">The second vector in the angle.</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.PathToLine(UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Line)">
+            <summary>
+            Finds the shortest vector that goes from the given point to the given line.
+            </summary>
+            <param name="point">The point where to find the path from.</param>
+            <param name="line">The line to find the path to.</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.LimitTo(System.Single,System.Single)">
+            <summary>
+            Limits the input to [+/-] limit.
+            </summary>
+            <param name="input">The input value.</param>
+            <param name="limit">The limiting value.</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.HeadToTailAngle(UnityEngine.Vector2,UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Angle)">
+            <summary>
+            Changes the heading of v2 so that if v2's tail is placed on the head of v1, the angle between those two vectors is 'degrees'.
+            This can also be described as setting the angle of a bend in a line.
+            </summary>
+            <param name="v1">Unchanged vector.</param>
+            <param name="v2">Changed vector.</param>
+            <param name="degrees">The angle in degrees.</param>
+            <returns>Returns v2.SetHeading(180.0f - v1.Heading() - degrees).</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Intersection(KineticEnergy.CodeTools.Math.Geometry.Line,KineticEnergy.CodeTools.Math.Geometry.Line)">
+            <summary>
+            Finds the intersection between two or more Geometry objects.
+            </summary>
+            <param name="l1">Line 1</param>
+            <param name="l2">Line 2</param>
+            <returns>Returns the intersection between l1 and l2.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Intersection(KineticEnergy.CodeTools.Math.Geometry.Circle,KineticEnergy.CodeTools.Math.Geometry.Circle)">
+            <summary>
+            Finds the intersections between two or more Geometry objects.
+            </summary>
+            <param name="c1">Circle 1</param>
+            <param name="c2">Circle 2</param>
+            <returns>Returns [the closest] two intersections between the two circles.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Intersection(KineticEnergy.CodeTools.Math.Geometry.Circle,KineticEnergy.CodeTools.Math.Geometry.Circle,KineticEnergy.CodeTools.Math.Geometry.Circle)">
+            <summary>
+            Finds the intersections between two or more Geometry objects.
+            </summary>
+            <param name="c1">Circle 1.</param>
+            <param name="c2">Circle 2.</param>
+            <param name="c3">Circle 3.</param>
+            <returns>Returns [the closest] intersection shared by all three circles.</returns>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Direction">
+            <summary>General direction in terms of left/right/up/down. More specifically, the normalized direction on either the X or Y axis.</summary>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Sign">
+            <summary>Positive = 1, Negative = -1.</summary>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Axis">
+            <summary>x : y : : horizontal : vertical</summary>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.AngleType">
+            <summary>Enumerator for radians or degrees.</summary>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Angle">
+            <summary>
+            Ties together a value and a unit for an angle.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Angle.value">
+            <summary>The value of the angle with unknown units.</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Angle.type">
+            <summary>The units of the angle.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Angle.#ctor(System.Single,KineticEnergy.CodeTools.Math.Geometry.AngleType)">
+            <summary>
+            Creates a new angle
+            </summary>
+            <param name="value">The value of the angle in the units given.</param>
+            <param name="type">The units of the angle.</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Angle.ConvertType(KineticEnergy.CodeTools.Math.Geometry.AngleType)">
+            <summary>
+            Changes the units and applies the conversion.
+            </summary>
+            <param name="type">The new units of the angle.</param>
+        </member>
+        <member name="P:KineticEnergy.CodeTools.Math.Geometry.Angle.Radians">
+            <summary>Use this only if you don't know the units for sure. If you do, then use 'Angle.value'.</summary>
+        </member>
+        <member name="P:KineticEnergy.CodeTools.Math.Geometry.Angle.Degrees">
+            <summary>Use this only if you don't know the units for sure. If you do, then use 'Angle.value'.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Angle.op_Implicit(System.Single)~KineticEnergy.CodeTools.Math.Geometry.Angle">
+            <summary>Casts a float into a new Angle with units of radians.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Angle.op_Implicit(KineticEnergy.CodeTools.Math.Geometry.Angle)~System.Single">
+            <summary>Casts an angle into a float with 'Angle.radians'.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Angle.op_Implicit(System.Int32)~KineticEnergy.CodeTools.Math.Geometry.Angle">
+            <summary>Casts an int into a new Angle with units of degrees.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Angle.op_Explicit(KineticEnergy.CodeTools.Math.Geometry.Angle)~System.Int32">
+            <summary>Casts an angle into an int with 'Angle.degrees'.</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Angle.radUp">
+            <summary>1/2 PI</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Angle.radLeft">
+            <summary>1 PI</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Angle.radDown">
+            <summary>2/3 PI</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Angle.radRight">
+            <summary>2 PI</summary>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Line">
+            <summary>
+            Stores data and methods for a line.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Line.a">
+            <summary>ax + by = c;</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Line.b">
+            <summary>ax + by = c;</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Line.c">
+            <summary>ax + by = c;</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Line.X">
+            <summary>If the line is horizontal, the equation of the line is X = [a constant].</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Geometry.Line.isVertical">
+            <summary>Is the line horizontal?</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.#ctor(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Creates a vertical line given A, B, C, and it's x-coordinate.
+            </summary>
+            <param name="A">Ax + by = c</param>
+            <param name="B">ax + By = c</param>
+            <param name="C">ax + by = C</param>
+            <param name="x">X = this (horizontal line)</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.#ctor(System.Single,System.Single,System.Single)">
+            <summary>
+            Creates a line given A, B, and C in Ax + By = C
+            </summary>
+            <param name="A">Ax + by = c</param>
+            <param name="B">ax + By = c</param>
+            <param name="C">ax + by = C</param>
+        </member>
+        <member name="P:KineticEnergy.CodeTools.Math.Geometry.Line.slope">
+            <summary>The slope of the line.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.Angle(KineticEnergy.CodeTools.Math.Geometry.AngleType)">
+            <summary>Angle of the slope.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.ShiftX(System.Single)">
+            <summary>
+            Shifts the line left/right by a distance of 'd'.
+            </summary>
+            <param name="d">distance to shift the line</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.ShiftY(System.Single)">
+            <summary>
+            Shifts the line upwards/downwards by a distance of 'd'.
+            </summary>
+            <param name="d">distance to shift the line.</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.PointFromX(System.Single)">
+            <summary>Returns (x, y) given x.</summary>
+            <param name="x">the x-coordinate of the point</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.PointFromY(System.Single)">
+            <summary>Returns (x, y) given y.</summary>
+            <param name="y">the y-coordinate of the point</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.PointFromDistance(UnityEngine.Vector2,System.Single,UnityEngine.Vector2)">
+            <summary>
+            Finds a point on this line from a start point, distance, and direction.
+            </summary>
+            <param name="point">distance from this point</param>
+            <param name="distance">distance from point 'point'</param>
+            <param name="direction">direction on the line (does not need to align with the lign)</param>
+            <returns></returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.PointFromDistance(UnityEngine.Vector2,System.Single,System.Int32)">
+            <summary>
+            Finds a point on this line from a start point, distance, and direction.
+            </summary>
+            <param name="point">Distance from this point.</param>
+            <param name="distance">Distance from point 'point'.</param>
+            <param name="direction">Left = -1, Right = +1.</param>
+            <returns></returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Line.Intersection(KineticEnergy.CodeTools.Math.Geometry.Line)">
+            <summary>
+            Finds the intersection of this and l2.
+            </summary>
+            <returns>Returns the point of intersection.</returns>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Triangle">
+            <summary>
+            Stores data and methods for a triangle.
+            </summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Triangle.#ctor(System.Single,System.Single,System.Single)">
+            <summary>
+            Returns a complete triangle given the side lengths.
+            </summary>
+            <param name="_a">side length 'a'</param>
+            <param name="_b">side length 'b'</param>
+            <param name="_c">side length 'c'</param>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Box">
+            <summary>
+            Stores data and methods for a box with a position.
+            </summary>
+        </member>
+        <member name="P:KineticEnergy.CodeTools.Math.Geometry.Box.Points">
+            <summary>Clockwise, starting from bottom-left.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Box.#ctor(UnityEngine.Vector2,UnityEngine.Vector2)">
+            <summary>
+            Creates a new box given two corners (any order).
+            </summary>
+            <param name="corner1">A corner of the box.</param>
+            <param name="corner2">A corner of the box.</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Box.Contains(UnityEngine.Vector2)">
+            <summary>
+            Checks if the given point lies within the box.
+            </summary>
+            <param name="point">Point to test.</param>
+            <returns>Returns true if the point lies within the box.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Box.Place(KineticEnergy.CodeTools.Math.Geometry.Box)">
+            <summary>
+            If nessesary, shrinks the given box to fit within this box. The center is kept the same.
+            </summary>
+            <param name="box">Box to place inside.</param>
+            <returns>Returns a new box that fits inside the original.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Box.SplitAtY(System.Single)">
+            <summary>
+            Gives two boxes that are the original box split at the given y value.
+            </summary>
+            <param name="value">Y value to split the box at.</param>
+            <returns>Returns an array of two boxes.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Geometry.Box.SplitAtX(System.Single)">
+            <summary>
+            Gives two boxes that are the original box split at the given x value.
+            </summary>
+            <param name="value">X value to split the box at.</param>
+            <returns>Returns an array of two boxes.</returns>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Circle">
+            <summary>
+            Stores data and methods for a circle.
+            </summary>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Geometry.Area">
+            <summary>
+            Defines an area from boxes.
+            </summary>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Range">
+            <summary>
+            Class for an inclusive range.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Range.infinite">
+            <summary>Unlimited range.</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Range.half">
+            <summary>Size of 1: (-0.5, +0.5)</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range.ChangeByAmount(System.Single)">
+            <summary>
+            Adds twice the given value to the size.
+            </summary>
+            <param name="value">The value to add to the size.</param>
+            <returns>Returns a new range with the new size and the same center.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range.ChangeByFactor(System.Single)">
+            <summary>
+            Multiplies the size by the given value.
+            </summary>
+            <param name="value">The value to multiply the size by.</param>
+            <returns>Returns a new range with the new size and same center.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range.Contains(System.Single)">
+            <summary>
+            Checks if the given value is within the range.
+            </summary>
+            <returns>Returns 'true' if the given value is on the interval [min, max].</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range.EdgeDistance(System.Single)">
+            <summary>
+            Finds the value's distance to the closest edge of the range.
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range.Contains(KineticEnergy.CodeTools.Math.Range)">
+            <summary>
+            Checks if the given range is completely encompassed by this range.
+            </summary>
+            <param name="range"></param>
+            <returns></returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range.Place(System.Single)">
+            <summary>
+            Places the given value to the nearest value on the interval [min, max].
+            </summary>
+            <returns>If the given value is lesser/greater than min/max then it returns min/max. Otherwise, the value is unchanged.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range.PlaceOutside(System.Single)">
+            <summary>
+            Places the given value to either the minimum or maximum: whichever is closer.
+            </summary>
+            <returns>Returns the closest min/max to the given value.</returns>
+        </member>
+        <member name="T:KineticEnergy.CodeTools.Math.Range2D">
+            <summary>
+            Class for an inclusive Vector2 range for x and y components.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Range2D.infinite">
+            <summary>Unlimited range.</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Range2D.half">
+            <summary>Area of 1.</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Range2D.x">
+            <summary>The range of this vector component.</summary>
+        </member>
+        <member name="F:KineticEnergy.CodeTools.Math.Range2D.y">
+            <summary>The range of this vector component.</summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range2D.#ctor(KineticEnergy.CodeTools.Math.Range,KineticEnergy.CodeTools.Math.Range)">
+            <summary>
+            Creates a new Range2D.
+            </summary>
+            <param name="x">Range for the x component.</param>
+            <param name="y">Range for the y component.</param>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range2D.#ctor(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Creates a new Range2D.
+            </summary>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range2D.Contains(UnityEngine.Vector2)">
+            <summary>
+            Checks if the given value is within the range.
+            </summary>
+            <returns>Returns 'true' if the given value is on the interval [min, max].</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Range2D.Place(UnityEngine.Vector2)">
+            <summary>
+            Applies 'Range.Place(float)' to both components of the given vector to their respective range.
+            </summary>
+            <returns>Returns a new Vector2(x.Place(value.x), y.Place(value.y))</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Extentions.Heading(UnityEngine.Vector2)">
+            <summary>
+            The heading of the Vector. Default units of the angle are radians.
+            </summary>
+            <returns>Returns the degrees of this vector from Vector2.right.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Extentions.SetHeading(UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Angle)">
+            <summary>
+            Sets the heading of the vector.
+            </summary>
+            <param name="v">Original vector.</param>
+            <param name="angle">Amount of rotation in degrees.</param>
+            <returns>Returns a new vector is a heading of v.Heading + degrees and magnitude of the original.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Extentions.SetMagnitude(UnityEngine.Vector2,System.Single)">
+            <summary>
+            Sets the magnitude of the vector.
+            </summary>
+            <param name="v">Original vector.</param>
+            <param name="magnitude">New magnitude of the vector.</param>
+            <returns>Returns a new vector with the heading of the original but with the new magnitude.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Extentions.Rotate(UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Angle)">
+            <summary>
+            Rotates a vector by an angle.
+            </summary>
+            <param name="vector">Vector to rotate.</param>
+            <param name="angle">The rotation angle.</param>
+            <returns>Returns a vector of the same magnitude, but rotated.</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Extentions.RotateTo(UnityEngine.Vector2,UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Angle)">
+            <summary>
+            Rotates v1 towards v2.
+            </summary>
+            <param name="v1">Original vector.</param>
+            <param name="v2">Vector to.</param>
+            <param name="angle">Amount of rotation.</param>
+            <returns>Returns v1.Rotate([+/-]degrees).</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Extentions.RotateFrom(UnityEngine.Vector2,UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Angle)">
+            <summary>
+            Rotates v1 away from v2.
+            </summary>
+            <param name="v1">Original vector.</param>
+            <param name="v2">Vector from.</param>
+            <param name="theta">Amount of rotation.</param>
+            <returns>Returns v1.Rotate([-/+]degrees).</returns>
+        </member>
+        <member name="M:KineticEnergy.CodeTools.Math.Extentions.FromRotation(UnityEngine.Vector2,UnityEngine.Vector2,KineticEnergy.CodeTools.Math.Geometry.Angle)">
+            <summary>
+            Sets the heading of v1 equal to the heading of v2, then rotates it.
+            </summary>
+            <param name="v1">Original vector.</param>
+            <param name="v2">Vector from.</param>
+            <param name="angle">Change in angle from v2.</param>
+            <returns>Returns a new vector with the heading of (v2.heading + degrees) and the magnitude of v1.</returns>
+        </member>
+        <member name="T:KineticEnergy.Inventory.Container">
+            <summary>
+            Everything that hold <see cref="T:KineticEnergy.Inventory.Item"/>s extends from this class.
+            </summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.Container.Capacity">
+            <summary>The total capacity of <see cref="T:KineticEnergy.Inventory.Item"/>s that this <see cref="T:KineticEnergy.Inventory.Container"/> can hold.</summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.Container.UsedCapacity">
+            <summary>The total capacity of <see cref="T:KineticEnergy.Inventory.Item"/>s that this <see cref="T:KineticEnergy.Inventory.Container"/> has used.</summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.Container.UnusedCapacity">
+            <summary>The total capacity of <see cref="T:KineticEnergy.Inventory.Item"/>s that this <see cref="T:KineticEnergy.Inventory.Container"/> has not used.</summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.Container.Contents">
+            <summary>The contents of this <see cref="T:KineticEnergy.Inventory.Container"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Container.Add(KineticEnergy.Inventory.Item)">
+            <summary>Attempts to add the given <see cref="T:KineticEnergy.Inventory.Item"/> to the <see cref="T:KineticEnergy.Inventory.Container"/>.
+            Whatever cannot be added is returned.</summary>
+            <param name="inputItem">The stack to try to add.</param>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Container.Take(KineticEnergy.Inventory.Item)">
+            <summary>Attempts to take the given <see cref="T:KineticEnergy.Inventory.Item"/> from the <see cref="T:KineticEnergy.Inventory.Container"/>.
+            Whatever can be taken is returned.</summary>
+            <param name="outputItem">The stack to try to take.</param>
+        </member>
+        <member name="T:KineticEnergy.Inventory.SimpleContainer">
+            <summary>
+            <see cref="T:KineticEnergy.Inventory.Container"/> without the BS.
+            </summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.SimpleContainer.UsedCapacity">
+            <summary>The total capacity of <see cref="T:KineticEnergy.Inventory.Item"/>s that this <see cref="T:KineticEnergy.Inventory.Container"/> has not used.</summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.SimpleContainer.Contents">
+            <summary>The contents of this <see cref="T:KineticEnergy.Inventory.Container"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.SimpleContainer.Add(KineticEnergy.Inventory.Item)">
+            <summary>Attempts to add the given <see cref="T:KineticEnergy.Inventory.Item"/> to the <see cref="T:KineticEnergy.Inventory.Container"/>.
+            Whatever cannot be added is returned.</summary>
+            <param name="inputItem">The stack to try to add.</param>
+        </member>
+        <member name="M:KineticEnergy.Inventory.SimpleContainer.SimpleAdd(System.Collections.Generic.List{KineticEnergy.Inventory.Item}@,KineticEnergy.Inventory.Item@,KineticEnergy.Inventory.Size)">
+            <summary>Attempts to add the given <see cref="T:KineticEnergy.Inventory.Item"/> to the given <see cref="T:System.Collections.Generic.List`1"/>.
+            Whatever cannot be added is returned.</summary>
+            <param name="inputItem">The stack to try to add.</param>
+        </member>
+        <member name="M:KineticEnergy.Inventory.SimpleContainer.Take(KineticEnergy.Inventory.Item)">
+            <summary>Attempts to take the given <see cref="T:KineticEnergy.Inventory.Item"/> from the <see cref="T:KineticEnergy.Inventory.Container"/>.
+            Whatever can be taken is returned.</summary>
+            <param name="outputItem">The stack to try to take.</param>
+        </member>
+        <member name="M:KineticEnergy.Inventory.SimpleContainer.SimpleTake(System.Collections.Generic.List{KineticEnergy.Inventory.Item}@,KineticEnergy.Inventory.Item@,KineticEnergy.Inventory.Size)">
+            <summary>Attempts to take the given <see cref="T:KineticEnergy.Inventory.Item"/> from the given <see cref="T:System.Collections.Generic.List`1"/>.
+            Whatever can be taken is returned.</summary>
+            <param name="outputItem">The stack to try to take.</param>
+        </member>
+        <member name="T:KineticEnergy.Inventory.Item">
+            <summary>
+            Everything that is held by a <see cref="T:KineticEnergy.Inventory.Container"/> extends from this class.
+            <para/>
+            One instance of this class represents a "stack" of the item.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.Inventory.Item.count">
+            <summary>The amount of items that are in this stack.</summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.Item.StackSize">
+            <summary>The total size of this stack.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Item.MaxToAdd(KineticEnergy.Inventory.Size)">
+            <summary>Finds how many items can be added to this stack so it as close as possible to the given maximumSize.</summary>
+            <param name="maximumSize">The preferred <see cref="T:KineticEnergy.Inventory.Size"/>.</param>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Item.MaxToSub(KineticEnergy.Inventory.Size)">
+            <summary>Finds how many items can be removed from this stack so it as close as possible to the given minimumSize.</summary>
+            <param name="maximumSize">The preferred <see cref="T:KineticEnergy.Inventory.Size"/>.</param>
+        </member>
+        <member name="T:KineticEnergy.Inventory.SimpleItem">
+            <summary>
+            <see cref="T:KineticEnergy.Inventory.Item"/> without the BS.
+            </summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.SimpleItem.ItemSize">
+            <summary>Gets the size of a single item.</summary>
+        </member>
+        <member name="P:KineticEnergy.Inventory.SimpleItem.StackSize">
+            <summary>The total size of this stack.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.SimpleItem.MaxToAdd(KineticEnergy.Inventory.Size)">
+            <summary>Finds how many items can be added to this stack so it as close as possible to the given maximumSize.</summary>
+            <param name="maximumSize">The preferred <see cref="T:KineticEnergy.Inventory.Size"/>.</param>
+        </member>
+        <member name="M:KineticEnergy.Inventory.SimpleItem.MaxToSub(KineticEnergy.Inventory.Size)">
+            <summary>Finds how many items can be removed from this stack so it as close as possible to the given minimumSize.</summary>
+            <param name="maximumSize">The preferred <see cref="T:KineticEnergy.Inventory.Size"/>.</param>
+        </member>
+        <member name="T:KineticEnergy.Inventory.Size">
+            <summary>
+            Essentially just a number with operators that check for overflow/underflow when using operators.
+            </summary>
+        </member>
+        <member name="F:KineticEnergy.Inventory.Size.value">
+            <summary>20 units is twice as big as 10 units. Don't overthink it.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Size.op_Addition(KineticEnergy.Inventory.Size,KineticEnergy.Inventory.Size)">
+            <summary>An addition operator that avoids overflow by checking if the result is less than either of the original values.
+            If there is an overflow, the result will be <see cref="F:System.UInt64.MaxValue"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Size.op_Subtraction(KineticEnergy.Inventory.Size,KineticEnergy.Inventory.Size)">
+            <summary>A subtraction operator that avoids underflow by checking if the result is greater than either of the original values.
+            If there is an underflow, the result will be <see cref="F:System.UInt64.MinValue"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Size.op_Multiply(KineticEnergy.Inventory.Size,KineticEnergy.Inventory.Size)">
+            <summary>A multiplication operator that avoids overflow by checking if the result is less than either of the original values.
+            If there is an overflow, the result will be <see cref="F:System.UInt64.MaxValue"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Size.op_Multiply(KineticEnergy.Inventory.Size,System.UInt64)">
+            <summary>A multiplication operator that avoids overflow by checking if the result is less than either of the original values.
+            If there is an overflow, the result will be <see cref="F:System.UInt64.MaxValue"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Size.op_Division(KineticEnergy.Inventory.Size,KineticEnergy.Inventory.Size)">
+            <summary>A division operator that avoids underflow by checking if the result is greater than either of the original values.
+            If there is an underflow, the result will be <see cref="F:System.UInt64.MinValue"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Inventory.Size.op_Division(KineticEnergy.Inventory.Size,System.UInt64)">
+            <summary>A division operator that avoids underflow by checking if the result is greater than either of the original values.
+            If there is an underflow, the result will be <see cref="F:System.UInt64.MinValue"/>.</summary>
+        </member>
+        <member name="T:KineticEnergy.Entities.PlayerController.Gamemode">
+            <summary></summary>
+        </member>
+        <member name="F:KineticEnergy.Entities.PlayerController.gamemode">
+            <summary>The current <see cref="T:KineticEnergy.Entities.PlayerController.Gamemode"/> of this player.</summary>
+        </member>
+        <member name="P:KineticEnergy.Entities.PlayerController.hotbar">
+            <summary>This player's <see cref="T:KineticEnergy.Entities.PlayerController.Hotbar"/>.</summary>
+        </member>
+        <member name="M:KineticEnergy.Unity.InspectorHelper.TargetsAreMixed``1(UnityEngine.Object[],System.Func{``0,``0,System.Boolean})">
+            <summary>Tests if any unordered pair of a property in <see cref="!:Editor.targets"/> are unequal.</summary>
+            <typeparam name="ScriptType">The <see cref="T:UnityEngine.Object"/> type that the editor is assigned to.</typeparam>
+            <param name="targets"><see cref="!:Editor.targets"/></param>
+            <param name="mixedTest">Checks if the two given <see cref="!:ScriptType"/>s are mixed.</param>
+            <returns>Returns true if any unordered pair of the given array passes the given <see cref="!:Func&lt;ScriptType, ScriptType, bool&gt;"/>.</returns>
+        </member>
+    </members>
+</doc>
