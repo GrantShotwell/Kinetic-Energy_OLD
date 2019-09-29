@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4b5a47c6e91723647ad1327ca923203b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - realBlockPrefab: {instanceID: 0}
+  - blockGridPrefab: {fileID: 1166995511896709755, guid: a22d07f893d78554da1d0f46f2008334,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

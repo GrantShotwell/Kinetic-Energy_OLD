@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &2050622659848228130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6190381042555237802}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b5a47c6e91723647ad1327ca923203b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  realBlockPrefab: {fileID: 5587449815862946691, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+    type: 3}
+  blockGridPrefab: {fileID: 1166995511896709755, guid: a22d07f893d78554da1d0f46f2008334,
+    type: 3}
+  material: {fileID: 2100000, guid: 7ad6afa247466f54a87e9e648d8d094b, type: 2}
+  scale: 0.95
+  intersectedColliders: []
+--- !u!1001 &1757031416421686825
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5587449815862946691, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+        type: 3}
+      propertyPath: m_Name
+      value: Test Thruster Block_preview
+      objectReference: {fileID: 0}
+    - target: {fileID: 5587449815862946694, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5587449815862946694, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5587449815862946694, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5587449815862946694, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3148401965065417970, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8172235615059171764, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 7ad6afa247466f54a87e9e648d8d094b, type: 2}
+    - target: {fileID: 8172235615518619716, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 7ad6afa247466f54a87e9e648d8d094b, type: 2}
+    m_RemovedComponents:
+    - {fileID: 5587449815862946690, guid: 8b354d9dfdfd2294e8bedf524c6f3030, type: 3}
+  m_SourcePrefab: {fileID: 100100000, guid: 8b354d9dfdfd2294e8bedf524c6f3030, type: 3}
+--- !u!1 &6190381042555237802 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5587449815862946691, guid: 8b354d9dfdfd2294e8bedf524c6f3030,
+    type: 3}
+  m_PrefabInstance: {fileID: 1757031416421686825}
+  m_PrefabAsset: {fileID: 0}
