@@ -20,7 +20,7 @@ namespace KineticEnergy.Ships.Blocks {
             return true;
         }
 
-        public override void OnSetGrid() {
+        public override void OnGridSet() {
             UpdateFaces();
         }
 

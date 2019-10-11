@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2749881221383912026}
   - component: {fileID: 2749881221383912027}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Global
   m_TagString: Global Object
   m_Icon: {fileID: 0}
@@ -43,4 +43,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 053dd68ad55290245a92af8ec98f75a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parents: []

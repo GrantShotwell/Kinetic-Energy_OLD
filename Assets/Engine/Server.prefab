@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3113009734907896540}
   - component: {fileID: 3113009734907896531}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Server
   m_TagString: Server Object
   m_Icon: {fileID: 0}
@@ -43,4 +43,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c44882d68ab9ba34db9bd0d7c1352096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parents: []

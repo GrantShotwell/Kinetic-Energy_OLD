@@ -70,10 +70,10 @@ namespace KineticEnergy.Ships {
 
         }
 
-        public void PlaceBlock() {
+        public void TryPlaceBlock() {
             if(preview != null) {
-                if(grid != null) preview.Place(grid, grid.WorldPointToGrid(preview.transform.position));
-                else preview.PlaceNewGrid();
+                if(grid != null) preview.TryPlace(grid, grid.WorldPointToGrid(preview.transform.position));
+                else preview.TryPlaceNewGrid();
             }
         }
 

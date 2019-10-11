@@ -1,36 +1,39 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using KineticEnergy.Ships;
+using KineticEnergy.Ships.Blocks;
+using KineticEnergy.Interfaces.Manager;
+using KineticEnergy.Intangibles.Terminal;
+using KineticEnergy.Intangibles.Client;
 
-namespace KineticEnergy.Intangibles.Client {
-    
-    public class ClientBehavioursManager : MonoBehaviour {
+namespace KineticEnergy.Intangibles.Behaviours {
+    public class ClientBehavioursManager : BehavioursManager<ClientBehaviour> {
 
-        /// <summary>An array of <see cref="GameObject"/>s that, combined, have all <see cref="ClientBehaviour"/>s.</summary>
-        public GameObject[] parents;
-        /// <summary>Finds all <see cref="ClientBehaviour"/>s from <see cref="parents"/>.</summary>
-        public ClientBehaviour[] GlobalBehaviours {
-            get {
-                List<ClientBehaviour> behaviours = new List<ClientBehaviour>();
-                foreach(GameObject parent in parents)
-                    foreach(ClientBehaviour behaviour in parent.GetComponents<ClientBehaviour>())
-                        behaviours.Add(behaviour);
-                return behaviours.ToArray();
+        /// <summary>The camera currently being used by the client.</summary>
+        new public Camera camera { get; private set; }
+
+        /// <summary><see cref="ClientManager"/> found from <see cref="BehavioursManager{ManagedBehaviour}.OnSetup"/>.</summary>
+        public ClientManager clientManager { get; private set; }
+        /// <summary>Shorthand for "<c>this.clientManager.client</c>".</summary>
+        public ClientData client => clientManager.client;
+        /// <summary>Shorthand for "<c>this.clientManager.client.inputs</c>".</summary>
+        public Inputs inputs => clientManager.client.inputs;
+
+        public override void OnSetup() {
+            base.OnSetup();
+
+            //Get the ClientManager.
+            foreach(ClientBehaviour behaviour in managed) {
+                if(behaviour is ClientManager clientManager) {
+                    this.clientManager = clientManager;
+                    break;
+                }
             }
+
         }
 
-        public void Awake() {
-            var prefabs = Resources.LoadAll<GameObject>("Behaviours/Client");
-            List<GameObject> instantiated = new List<GameObject>();
-            foreach(GameObject prefab in prefabs) {
-                var obj = Instantiate(prefab);
-                obj.transform.parent = transform;
-                obj.name = prefab.name;
-                instantiated.Add(obj);
-            }
-            parents = instantiated.ToArray();
+        public void Update() {
+            camera = Camera.main;
         }
-
     }
-
 }

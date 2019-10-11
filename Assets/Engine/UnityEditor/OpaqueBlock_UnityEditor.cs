@@ -1,11 +1,7 @@
 ﻿#if UNITY_EDITOR
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using KineticEnergy.Ships.Blocks;
-using KineticEnergy.CodeTools;
-using KineticEnergy.Ships;
 
 namespace KineticEnergy.Unity {
 

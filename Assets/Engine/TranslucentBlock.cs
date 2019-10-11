@@ -13,7 +13,7 @@ namespace KineticEnergy.Ships.Blocks {
 
         public override bool SideIsOpaque(Vector3Int localPosition, Face face) {
             //Definition of a translucent block (in this context): some sides are opaque.
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
     }
