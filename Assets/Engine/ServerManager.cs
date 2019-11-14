@@ -1,9 +1,9 @@
-﻿using System.Collections;
+﻿using KineticEnergy.Intangibles.Behaviours;
+using KineticEnergy.Intangibles.Client;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using KineticEnergy.Intangibles.Client;
-using KineticEnergy.Intangibles.Behaviours;
-using System;
+using static KineticEnergy.Intangibles.Master.LevelsOfDetail;
 
 namespace KineticEnergy.Intangibles.Server {
 
@@ -14,9 +14,9 @@ namespace KineticEnergy.Intangibles.Server {
         internal List<ClientData> oldClients = new List<ClientData>();
         internal int count;
         internal GlobalBehavioursManager global;
-        
+
         public override void OnAllSetup() {
-            global = Manager.Manager.global;
+            global = Manager.Manager.Global;
         }
 
         public void FixedUpdate() {
@@ -46,7 +46,8 @@ namespace KineticEnergy.Intangibles.Server {
             oldClients.Sort(comparison);
             count++;
 
-            Debug.LogFormat("Connected client {0}.", client);
+            if(CanShowLog(LevelOfDetail.Basic, Master.LogSettings.clients))
+                Debug.LogFormat("Connected client {0}.", client);
 
         }
 
@@ -56,7 +57,8 @@ namespace KineticEnergy.Intangibles.Server {
             oldClients.Remove(client);
             count--;
 
-            Debug.LogFormat("Disconnected client {0}: {1}", client, reason);
+            if(CanShowLog(LevelOfDetail.Basic, Master.LogSettings.clients))
+                Debug.LogFormat("Disconnected client {0}: {1}", client, reason);
 
         }
 

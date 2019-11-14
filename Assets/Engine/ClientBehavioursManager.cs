@@ -1,10 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using KineticEnergy.Intangibles.Client;
 using UnityEngine;
-using KineticEnergy.Ships;
-using KineticEnergy.Ships.Blocks;
-using KineticEnergy.Interfaces.Manager;
-using KineticEnergy.Intangibles.Terminal;
-using KineticEnergy.Intangibles.Client;
 
 namespace KineticEnergy.Intangibles.Behaviours {
     public class ClientBehavioursManager : BehavioursManager<ClientBehaviour> {
@@ -23,7 +18,7 @@ namespace KineticEnergy.Intangibles.Behaviours {
             base.OnSetup();
 
             //Get the ClientManager.
-            foreach(ClientBehaviour behaviour in managed) {
+            foreach(ClientBehaviour behaviour in Managed) {
                 if(behaviour is ClientManager clientManager) {
                     this.clientManager = clientManager;
                     break;

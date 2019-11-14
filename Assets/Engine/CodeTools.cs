@@ -1,232 +1,469 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using KineticEnergy.CodeTools.Content;
+using KineticEnergy.Entities;
+using KineticEnergy.Intangibles.Behaviours;
+using KineticEnergy.Intangibles.Client;
+using KineticEnergy.Ships.Blocks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using UnityEngine;
-using KineticEnergy.Ships.Blocks;
-using KineticEnergy.CodeTools.Content;
-using KineticEnergy.Intangibles.Behaviours;
 using static KineticEnergy.CodeTools.Math.Geometry;
-using KineticEnergy.Intangibles.Client;
-using KineticEnergy.Entities;
+using static KineticEnergy.Intangibles.Master.LevelsOfDetail;
 
 namespace KineticEnergy {
 
-    #region Prefab
+    namespace Structs {
 
-    /// <summary>Stores any <see cref="GameObject"/>, as if it is a prefab.</summary>
-    /// <seealso cref="Instantiated"/>
-    /// <seealso cref="Prefab{TComponent1}"/>
-    /// <seealso cref="Prefab{TComponent1, TComponent2}"/>
-    public struct Prefab {
+        #region Prefab
+        /// <summary>Stores any <see cref="GameObject"/>, as if it is a prefab.</summary>
+        /// <seealso cref="Instantiated"/>
+        /// <seealso cref="Prefab{TComponent1}"/>
+        /// <seealso cref="Prefab{TComponent1, TComponent2}"/>
+        public struct Prefab {
 
-        public GameObject gameObject;
+            public GameObject gameObject;
 
-        /// <summary>Creates a new <see cref="Prefab"/>.</summary>
-        public Prefab(GameObject gameObject) {
-            this.gameObject = gameObject;
-            this.gameObject.SetActive(false);
+            /// <summary>Creates a new <see cref="Prefab"/>.</summary>
+            public Prefab(GameObject gameObject) {
+                this.gameObject = gameObject;
+                this.gameObject.SetActive(false);
+            }
+
+            /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
+            /// <returns>Returns <see cref="Instantiated"/>.</returns>
+            public Instantiated Instantiate(bool active = true) {
+                var instantiated = UnityEngine.Object.Instantiate(gameObject);
+                instantiated.name = gameObject.name;
+                instantiated.SetActive(active);
+                return instantiated;
+            }
+
+            /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
+            /// <param name="parent">Sets <see cref="Transform.parent"/> of the new <see cref="GameObject"/>.</param>
+            /// <returns>Returns <see cref="Instantiated"/>.</returns>
+            public Instantiated Instantiate(Transform parent, bool worldPositionStays = false, bool active = true) {
+                var instantiated = UnityEngine.Object.Instantiate(gameObject);
+                instantiated.name = gameObject.name;
+                instantiated.transform.SetParent(parent, worldPositionStays);
+                instantiated.SetActive(active);
+                return instantiated;
+            }
+
+            public static implicit operator Prefab(GameObject gameObject) => new Prefab(gameObject);
+            public static implicit operator GameObject(Prefab prefab) => prefab.gameObject;
+
         }
 
-        /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
-        /// <returns>Returns <see cref="Instantiated"/>.</returns>
-        public Instantiated Instantiate(bool active = true) {
-            var instantiated = UnityEngine.Object.Instantiate(gameObject);
-            instantiated.name = gameObject.name;
-            instantiated.SetActive(active);
-            return instantiated;
+        /// <summary>Stores the result of <see cref="Prefab.Instantiate"/>.</summary>
+        public struct Instantiated {
+
+            public GameObject gameObject;
+
+            public Instantiated(GameObject gameObject) {
+                this.gameObject = gameObject;
+            }
+
+            public static implicit operator Instantiated(GameObject gameObject) => new Instantiated(gameObject);
+
         }
 
-        /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
-        /// <param name="parent">Sets <see cref="Transform.parent"/> of the new <see cref="GameObject"/>.</param>
-        /// <returns>Returns <see cref="Instantiated"/>.</returns>
-        public Instantiated Instantiate(Transform parent, bool active = true) {
-            var instantiated = UnityEngine.Object.Instantiate(gameObject);
-            instantiated.name = gameObject.name;
-            instantiated.transform.parent = parent;
-            instantiated.SetActive(active);
-            return instantiated;
+        /// <summary>Stores any <see cref="GameObject"/>, as if it is a prefab, that has at least one defined <see cref="Component"/>.</summary>
+        /// <seealso cref="Instantiated{TComponent1}"/>
+        /// <seealso cref="Prefab"/>
+        /// <seealso cref="Prefab{TComponent1, TComponent2}"/>
+        public struct Prefab<TComponent1> where TComponent1 : Component {
+
+            public GameObject gameObject;
+            public TComponent1 component;
+
+            /// <summary>Creates a new <see cref="Prefab{TComponent1}"/> by using <see cref="GameObject.GetComponent"/>.</summary>
+            public Prefab(GameObject gameObject) {
+                this.gameObject = gameObject;
+                gameObject.SetActive(false);
+                component = gameObject.GetComponent<TComponent1>();
+            }
+
+            /// <summary>Creates a new <see cref="Prefab{TComponent1}"/> by using <see cref="Component.gameObject"/>.</summary>
+            public Prefab(TComponent1 component) {
+                this.component = component;
+                gameObject = component.gameObject;
+                gameObject.SetActive(false);
+            }
+
+            /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
+            /// <returns>Returns <see cref="Instantiated{TComponent1}"/>.</returns>
+            public Instantiated<TComponent1> Instantiate(bool active = true) {
+                var instantiated = UnityEngine.Object.Instantiate(gameObject);
+                instantiated.name = gameObject.name;
+                instantiated.SetActive(active);
+                return instantiated;
+            }
+
+            /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
+            /// <param name="parent">Sets <see cref="Transform.parent"/> of the new <see cref="GameObject"/>.</param>
+            /// <returns>Returns <see cref="Instantiated{TComponent1}"/>.</returns>
+            public Instantiated<TComponent1> Instantiate(Transform parent, bool worldPositionStays = false, bool active = true) {
+                var instantiated = UnityEngine.Object.Instantiate(gameObject);
+                instantiated.name = gameObject.name;
+                instantiated.transform.SetParent(parent, worldPositionStays);
+                instantiated.SetActive(active);
+                return instantiated;
+            }
+
+            public static implicit operator Prefab(Prefab<TComponent1> prefab) => new Prefab(prefab.gameObject);
+            public static implicit operator Prefab<TComponent1>(GameObject gameObject) => new Prefab<TComponent1>(gameObject);
+            public static implicit operator Prefab<TComponent1>(TComponent1 component) => new Prefab<TComponent1>(component);
+            public static implicit operator GameObject(Prefab<TComponent1> prefab) => prefab.gameObject;
+            public static implicit operator TComponent1(Prefab<TComponent1> prefab) => prefab.component;
+
         }
 
-        public static implicit operator Prefab(GameObject gameObject) => new Prefab(gameObject);
-        public static implicit operator GameObject(Prefab prefab) => prefab.gameObject;
+        /// <summary>Stores the result of <see cref="Prefab{TComponent}.Instantiate"/>.</summary>
+        public struct Instantiated<TComponent> where TComponent : Component {
+
+            public GameObject gameObject;
+            public TComponent component;
+
+            public Instantiated(GameObject gameObject) {
+                this.gameObject = gameObject;
+                component = gameObject.GetComponent<TComponent>();
+            }
+
+            public Instantiated(TComponent component) {
+                gameObject = component.gameObject;
+                this.component = component;
+            }
+
+            public static implicit operator Instantiated(Instantiated<TComponent> instantiated) => new Instantiated(instantiated.gameObject);
+            public static implicit operator Instantiated<TComponent>(GameObject gameObject) => new Instantiated<TComponent>(gameObject);
+            public static implicit operator TComponent(Instantiated<TComponent> instantiated) => instantiated.component;
+
+        }
+
+        /// <summary>Stores any <see cref="GameObject"/>, as if it is a prefab, with at least two defined <see cref="Component"/>s.</summary>
+        /// <seealso cref="Instantiated{TComponent1, TComponent2}"/>
+        /// <seealso cref="Prefab"/>
+        /// <seealso cref="Prefab{TComponent1}"/>
+        public struct Prefab<TComponent1, TComponent2> where TComponent1 : Component where TComponent2 : Component {
+
+            public GameObject gameObject;
+            public TComponent1 component1;
+            public TComponent2 component2;
+
+            /// <summary>Creates a new <see cref="Prefab{TComponent1, TComponent2}"/> by using <see cref="GameObject.GetComponent"/>.</summary>
+            public Prefab(GameObject gameObject) {
+                this.gameObject = gameObject;
+                gameObject.SetActive(false);
+                component1 = gameObject.GetComponent<TComponent1>();
+                component2 = gameObject.GetComponent<TComponent2>();
+            }
+
+            /// <summary>Creates a new <see cref="Prefab{TComponent1, TComponent2}"/> by using <see cref="Component.gameObject"/>.</summary>
+            public Prefab(TComponent1 component1, TComponent2 component2) {
+                this.component1 = component1;
+                this.component2 = component2;
+                gameObject = component1.gameObject;
+                gameObject.SetActive(false);
+            }
+
+            /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
+            /// <returns>Returns <see cref="Instantiated{TComponent1, TComponent2}"/>.</returns>
+            public Instantiated<TComponent1, TComponent2> Instantiate(bool active = true) {
+                var instantiated = UnityEngine.Object.Instantiate(gameObject);
+                instantiated.name = gameObject.name;
+                instantiated.SetActive(active);
+                return instantiated;
+            }
+
+            /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
+            /// <param name="parent">Sets <see cref="Transform.parent"/> of the new <see cref="GameObject"/>.</param>
+            /// <returns>Returns <see cref="Instantiated{TComponent1, TComponent2}"/>.</returns>
+            public Instantiated<TComponent1, TComponent2> Instantiate(Transform parent, bool worldPositionStays = false, bool active = true) {
+                var instantiated = UnityEngine.Object.Instantiate(gameObject);
+                instantiated.name = gameObject.name;
+                instantiated.transform.SetParent(parent, worldPositionStays);
+                instantiated.SetActive(active);
+                return instantiated;
+            }
+
+            public static implicit operator Prefab(Prefab<TComponent1, TComponent2> prefab) => new Prefab(prefab.gameObject);
+            public static implicit operator Prefab<TComponent1>(Prefab<TComponent1, TComponent2> prefab) => new Prefab<TComponent1>(prefab.component1);
+            public static implicit operator Prefab<TComponent2>(Prefab<TComponent1, TComponent2> prefab) => new Prefab<TComponent2>(prefab.component2);
+            public static implicit operator Prefab<TComponent1, TComponent2>(GameObject gameObject) => new Prefab<TComponent1, TComponent2>(gameObject);
+            public static implicit operator GameObject(Prefab<TComponent1, TComponent2> prefab) => prefab.gameObject;
+            public static implicit operator TComponent1(Prefab<TComponent1, TComponent2> prefab) => prefab.component1;
+            public static implicit operator TComponent2(Prefab<TComponent1, TComponent2> prefab) => prefab.component2;
+
+        }
+
+        /// <summary>Stores the result of <see cref="Prefab{TComponent1, TComponent2}.Instantiate"/>.</summary>
+        public struct Instantiated<TComponent1, TComponent2> where TComponent1 : Component where TComponent2 : Component {
+
+            public GameObject gameObject;
+            public TComponent1 component1;
+            public TComponent2 component2;
+
+            public Instantiated(GameObject gameObject) {
+                this.gameObject = gameObject;
+                component1 = gameObject.GetComponent<TComponent1>();
+                component2 = gameObject.GetComponent<TComponent2>();
+            }
+
+            public Instantiated(TComponent1 component1, TComponent2 component2) {
+                gameObject = component1.gameObject;
+                this.component1 = component1;
+                this.component2 = component2;
+            }
+
+            public static implicit operator Instantiated(Instantiated<TComponent1, TComponent2> instantiated) => new Instantiated(instantiated.gameObject);
+            public static implicit operator Instantiated<TComponent1>(Instantiated<TComponent1, TComponent2> instantiated) => new Instantiated<TComponent1>(instantiated.component1);
+            public static implicit operator Instantiated<TComponent1, TComponent2>(GameObject gameObject) => new Instantiated<TComponent1, TComponent2>(gameObject);
+            public static implicit operator TComponent1(Instantiated<TComponent1, TComponent2> instantiated) => instantiated.component1;
+            public static implicit operator TComponent2(Instantiated<TComponent1, TComponent2> instantiated) => instantiated.component2;
+
+        }
+
+        #endregion
+
+        #region Numbers
+
+        /// <summary>A magnitude and center of mass.</summary>
+        [Serializable]
+        public struct Mass {
+
+            /// <summary>The magnitude of this mass in the arbitrary units of grams.</summary>
+            public long magnitude;
+            /// <summary>The local position of this mass.</summary>
+            public Vector3 position;
+
+            /// <summary>Creates a new <see cref="Mass"/> with the given properties.</summary>
+            /// <param name="magnitude">(<see cref="magnitude"/>) The magnitude of this mass in the arbitrary units of grams.</param>
+            /// <param name="position">(<see cref="position"/>) The local position of this mass.</param>
+            public Mass(long magnitude, Vector3 position) {
+                this.magnitude = magnitude;
+                this.position = position;
+            }
+
+            #region Shorthands
+
+            /// <summary>Shorthand for a new <see cref="Mass"/> with a <see cref="magnitude"/> and <see cref="position"/> of zero.</summary>
+            /// <remarks>Reccomended usecase is for setting a default value in like a constructor or something.</remarks>
+            public static Mass zero = new Mass(0, Vector3.zero);
+            /// <summary>Shorthand for a new <see cref="Mass"/> with a <see cref="magnitude"/> of one and a <see cref="position"/> of zero.</summary>
+            /// <remarks>Although not reccomended, this is useful in combination with <see cref="operator *(Mass, long)"/>.</remarks>
+            public static Mass one = new Mass(1, Vector3.zero);
+
+            #endregion
+
+            #region Operators
+
+            #region Addition
+
+            // - Add Mass - //
+            /// <summary>An addition operator that avoids overflow by checking if the result is less than either of the original values.
+            /// If there is an overflow, the result will be <see cref="ulong.MaxValue"/>.
+            /// <para/>Also gives the appropriate <see cref="position"/> to the return value.</summary>
+            public static Mass operator +(Mass left, Mass right) {
+                var resultingMagnitude = left.magnitude + right.magnitude;
+                if(resultingMagnitude < left.magnitude || resultingMagnitude < right.magnitude)
+                    resultingMagnitude = long.MaxValue;
+                var resultingPosition = Vector3.Lerp(left.position, right.position,
+                    resultingMagnitude == 0 ? .50f : (float)(right.magnitude / (double)resultingMagnitude));
+                return new Mass(resultingMagnitude, resultingPosition);
+            }
+
+            // - Add Value - //
+            /// <summary>An addition operator that avoids overflow by checking if the result is less than either of the original values.
+            /// If there is an overflow, the result will be <see cref="ulong.MaxValue"/>.
+            /// <para/>The <see cref="position"/> does not change.</summary>
+            /// <remarks>There is no mirroring "<c>+(ulong value, Mass mass)</c>" because it makes sense to add a number to a weighted position, but not to add a weighted position to a number.</remarks>
+            public static Mass operator +(Mass mass, long value) {
+                var result = mass.magnitude + value;
+                if(result < mass.magnitude || result < value)
+                    result = long.MaxValue;
+                return new Mass(result, mass.position);
+            }
+
+            // - Add Vector - //
+            /// <summary>Shifts the center of mass by the given vector through addition.</summary>
+            public static Mass operator +(Mass mass, Vector3 vector) { return new Mass(mass.magnitude, mass.position + vector); }
+
+            #endregion
+
+            #region Subtraction
+
+            // - Subtract Mass - //
+            /// <summary>A subtraction operator that avoids underflow by checking if the result is greater than either of the original values.
+            /// If there is an underflow, the result will be <see cref="ulong.MinValue"/>.
+            /// <para/>Also gives the appropriate <see cref="position"/> to the return value.</summary>
+            public static Mass operator -(Mass left, Mass right) {
+                var resultingMagnitude = left.magnitude - right.magnitude;
+                if(resultingMagnitude > left.magnitude || resultingMagnitude < right.magnitude)
+                    resultingMagnitude = long.MinValue;
+                var resultingPosition = Vector3.Lerp(left.position, right.position,
+                    resultingMagnitude == 0 ? .50f : (float)(left.magnitude / (double)resultingMagnitude));
+                return new Mass(resultingMagnitude, resultingPosition);
+            }
+
+            // - Subtract Value - //
+            /// <summary>A subtraction operator that avoids underflow by checking if the result is greater than either of the original values.
+            /// If there is an underflow, the result will be <see cref="ulong.MinValue"/>.
+            /// <para/>The <see cref="position"/> does not change.</summary>
+            /// <remarks>There is no mirroring "<c>-(ulong value, Mass mass)</c>" because it makes sense to subtract a number from a weighted position, but not to subtract a weighted position from a number.</remarks>
+            public static Mass operator -(Mass mass, long value) {
+                var result = mass.magnitude - value;
+                if(result < mass.magnitude || result < value)
+                    result = long.MaxValue;
+                return new Mass(result, mass.position);
+            }
+
+            // - Subtract Vector - //
+            /// <summary>Shifts the center of mass by the given vector through subtraction.</summary>
+            public static Mass operator -(Mass mass, Vector3 vector) { return new Mass(mass.magnitude, mass.position - vector); }
+
+            #endregion
+
+            #region Multiplication & Division
+
+            // - Multiply by Value - //
+            /// <summary>A multiplication operator that avoids overflow by checking if the result is less than either of the original values.
+            /// If there is an overflow, the result will be <see cref="ulong.MaxValue"/>.
+            /// <para/>The <see cref="position"/> does not change.</summary>
+            public static Mass operator *(Mass mass, long value) {
+                var result = mass.magnitude * value;
+                if(result < mass.magnitude || result < value)
+                    result = long.MaxValue;
+                return new Mass(result, mass.position);
+            }
+
+
+
+            // - Divide by Value - //
+            /// <summary>A division operator that avoids underflow by checking if the result is greater than either of the original values.
+            /// If there is an underflow, the result will be <see cref="ulong.MinValue"/>.
+            /// <para/>The <see cref="position"/> does not change.</summary>
+            public static Mass operator /(Mass mass, long value) {
+                var result = mass.magnitude / value;
+                if(result > mass.magnitude || result > value)
+                    result = long.MaxValue;
+                return new Mass(result, mass.position);
+            }
+
+            #endregion
+
+            #region Comparisions
+
+            /// <summary>Compares the two <see cref="magnitude"/>s.</summary>
+            public static bool operator <(Mass left, Mass right) => left.magnitude < right.magnitude;
+            /// <summary>Compares the two <see cref="magnitude"/>s.</summary>
+            public static bool operator >(Mass left, Mass right) => left.magnitude > right.magnitude;
+
+            /// <summary>Checks if both given <see cref="Mass"/> objects have equal <see cref="magnitude"/>s and equal <see cref="position"/>s.</summary>
+            public static bool operator ==(Mass mass1, Mass mass2) => mass1.magnitude == mass2.magnitude && mass1.position == mass2.position;
+            /// <summary>Checks if both given <see cref="Mass"/> objects have unequal <see cref="magnitude"/>s or unequal <see cref="position"/>s.</summary>
+            public static bool operator !=(Mass mass1, Mass mass2) => mass1.magnitude != mass2.magnitude || mass1.position != mass2.position;
+
+            /// <summary>Auto-generated by Visual Studio.</summary>
+            public override bool Equals(object obj) {
+                return obj is Mass mass &&
+                       magnitude == mass.magnitude &&
+                       position.Equals(mass.position);
+            }
+
+            /// <summary>Auto-generated by Visual Studio.</summary>
+            public override int GetHashCode() {
+                var hashCode = 813208763;
+                hashCode = hashCode * -1521134295 + magnitude.GetHashCode();
+                hashCode = hashCode * -1521134295 + EqualityComparer<Vector3>.Default.GetHashCode(position);
+                return hashCode;
+            }
+
+            #endregion
+
+            /// <summary>"{<see cref="magnitude"/>}g at {<see cref="position"/>}"</summary>
+            public override string ToString() {
+                return string.Format("{0}g at {1}", magnitude, position);
+            }
+
+            #endregion
+
+        }
+
+
+
+        #endregion
 
     }
-
-    /// <summary>Stores the result of <see cref="Prefab.Instantiate"/>.</summary>
-    public struct Instantiated {
-
-        public GameObject gameObject;
-
-        public Instantiated(GameObject gameObject) {
-            this.gameObject = gameObject;
-        }
-
-        public static implicit operator Instantiated(GameObject gameObject) => new Instantiated(gameObject);
-
-    }
-
-    /// <summary>Stores any <see cref="GameObject"/>, as if it is a prefab, that has at least one defined <see cref="Component"/>.</summary>
-    /// <seealso cref="Instantiated{TComponent1}"/>
-    /// <seealso cref="Prefab"/>
-    /// <seealso cref="Prefab{TComponent1, TComponent2}"/>
-    public struct Prefab<TComponent1> where TComponent1 : Component {
-
-        public GameObject gameObject;
-        public TComponent1 component;
-
-        /// <summary>Creates a new <see cref="Prefab{TComponent1}"/> by using <see cref="GameObject.GetComponent"/>.</summary>
-        public Prefab(GameObject gameObject) {
-            this.gameObject = gameObject;
-            gameObject.SetActive(false);
-            component = gameObject.GetComponent<TComponent1>();
-        }
-
-        /// <summary>Creates a new <see cref="Prefab{TComponent1}"/> by using <see cref="Component.gameObject"/>.</summary>
-        public Prefab(TComponent1 component) {
-            this.component = component;
-            gameObject = component.gameObject;
-            gameObject.SetActive(false);
-        }
-
-        /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
-        /// <returns>Returns <see cref="Instantiated{TComponent1}"/>.</returns>
-        public Instantiated<TComponent1> Instantiate(bool active = true) {
-            var instantiated = UnityEngine.Object.Instantiate(gameObject);
-            instantiated.name = gameObject.name;
-            instantiated.SetActive(active);
-            return instantiated;
-        }
-
-        /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
-        /// <param name="parent">Sets <see cref="Transform.parent"/> of the new <see cref="GameObject"/>.</param>
-        /// <returns>Returns <see cref="Instantiated{TComponent1}"/>.</returns>
-        public Instantiated<TComponent1> Instantiate(Transform parent, bool active = true) {
-            var instantiated = UnityEngine.Object.Instantiate(gameObject);
-            instantiated.name = gameObject.name;
-            instantiated.transform.SetParent(parent, false);
-            instantiated.SetActive(active);
-            return instantiated;
-        }
-
-        public static implicit operator Prefab(Prefab<TComponent1> prefab) => new Prefab(prefab.gameObject);
-        public static implicit operator Prefab<TComponent1>(GameObject gameObject) => new Prefab<TComponent1>(gameObject);
-        public static implicit operator Prefab<TComponent1>(TComponent1 component) => new Prefab<TComponent1>(component);
-        public static implicit operator GameObject(Prefab<TComponent1> prefab) => prefab.gameObject;
-        public static implicit operator TComponent1(Prefab<TComponent1> prefab) => prefab.component;
-
-    }
-
-
-    /// <summary>Stores the result of <see cref="Prefab{TComponent}.Instantiate"/>.</summary>
-    public struct Instantiated<TComponent> where TComponent : Component {
-
-        public GameObject gameObject;
-        public TComponent component;
-
-        public Instantiated(GameObject gameObject) {
-            this.gameObject = gameObject;
-            component = gameObject.GetComponent<TComponent>();
-        }
-
-        public Instantiated(TComponent component) {
-            gameObject = component.gameObject;
-            this.component = component;
-        }
-
-        public static implicit operator Instantiated(Instantiated<TComponent> instantiated) => new Instantiated(instantiated.gameObject);
-        public static implicit operator Instantiated<TComponent>(GameObject gameObject) => new Instantiated<TComponent>(gameObject);
-        public static implicit operator TComponent(Instantiated<TComponent> instantiated) => instantiated.component;
-
-    }
-
-    /// <summary>Stores any <see cref="GameObject"/>, as if it is a prefab, with at least two defined <see cref="Component"/>s.</summary>
-    /// <seealso cref="Instantiated{TComponent1, TComponent2}"/>
-    /// <seealso cref="Prefab"/>
-    /// <seealso cref="Prefab{TComponent1}"/>
-    public struct Prefab<TComponent1, TComponent2> where TComponent1 : Component where TComponent2: Component {
-
-        public GameObject gameObject;
-        public TComponent1 component1;
-        public TComponent2 component2;
-
-        /// <summary>Creates a new <see cref="Prefab{TComponent1, TComponent2}"/> by using <see cref="GameObject.GetComponent"/>.</summary>
-        public Prefab(GameObject gameObject) {
-            this.gameObject = gameObject;
-            gameObject.SetActive(false);
-            component1 = gameObject.GetComponent<TComponent1>();
-            component2 = gameObject.GetComponent<TComponent2>();
-        }
-
-        /// <summary>Creates a new <see cref="Prefab{TComponent1, TComponent2}"/> by using <see cref="Component.gameObject"/>.</summary>
-        public Prefab(TComponent1 component1, TComponent2 component2) {
-            this.component1 = component1;
-            this.component2 = component2;
-            gameObject = component1.gameObject;
-            gameObject.SetActive(false);
-        }
-
-        /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
-        /// <returns>Returns <see cref="Instantiated{TComponent1, TComponent2}"/>.</returns>
-        public Instantiated<TComponent1, TComponent2> Instantiate(bool active = true) {
-            var instantiated = UnityEngine.Object.Instantiate(gameObject);
-            instantiated.name = gameObject.name;
-            instantiated.SetActive(active);
-            return instantiated;
-        }
-
-        /// <summary>Equivalent function to <see cref="UnityEngine.Object.Instantiate"/>.</summary>
-        /// <param name="parent">Sets <see cref="Transform.parent"/> of the new <see cref="GameObject"/>.</param>
-        /// <returns>Returns <see cref="Instantiated{TComponent1, TComponent2}"/>.</returns>
-        public Instantiated<TComponent1, TComponent2> Instantiate(Transform parent, bool active = true) {
-            var instantiated = UnityEngine.Object.Instantiate(gameObject);
-            instantiated.name = gameObject.name;
-            instantiated.transform.parent = parent;
-            instantiated.SetActive(active);
-            return instantiated;
-        }
-
-        public static implicit operator Prefab(Prefab<TComponent1, TComponent2> prefab) => new Prefab(prefab.gameObject);
-        public static implicit operator Prefab<TComponent1>(Prefab<TComponent1, TComponent2> prefab) => new Prefab<TComponent1>(prefab.component1);
-        public static implicit operator Prefab<TComponent2>(Prefab<TComponent1, TComponent2> prefab) => new Prefab<TComponent2>(prefab.component2);
-        public static implicit operator Prefab<TComponent1, TComponent2>(GameObject gameObject) => new Prefab<TComponent1, TComponent2>(gameObject);
-        public static implicit operator GameObject(Prefab<TComponent1, TComponent2> prefab) => prefab.gameObject;
-        public static implicit operator TComponent1(Prefab<TComponent1, TComponent2> prefab) => prefab.component1;
-        public static implicit operator TComponent2(Prefab<TComponent1, TComponent2> prefab) => prefab.component2;
-
-    }
-
-    /// <summary>Stores the result of <see cref="Prefab{TComponent1, TComponent2}.Instantiate"/>.</summary>
-    public struct Instantiated<TComponent1, TComponent2> where TComponent1 : Component where TComponent2 : Component {
-
-        public GameObject gameObject;
-        public TComponent1 component1;
-        public TComponent2 component2;
-
-        public Instantiated(GameObject gameObject) {
-            this.gameObject = gameObject;
-            component1 = gameObject.GetComponent<TComponent1>();
-            component2 = gameObject.GetComponent<TComponent2>();
-        }
-
-        public Instantiated(TComponent1 component1, TComponent2 component2) {
-            gameObject = component1.gameObject;
-            this.component1 = component1;
-            this.component2 = component2;
-        }
-
-        public static implicit operator Instantiated (Instantiated<TComponent1, TComponent2> instantiated) => new Instantiated(instantiated.gameObject);
-        public static implicit operator Instantiated<TComponent1> (Instantiated<TComponent1, TComponent2> instantiated) => new Instantiated<TComponent1>(instantiated.component1);
-        public static implicit operator Instantiated<TComponent1, TComponent2>(GameObject gameObject) => new Instantiated<TComponent1, TComponent2>(gameObject);
-        public static implicit operator TComponent1(Instantiated<TComponent1, TComponent2> instantiated) => instantiated.component1;
-        public static implicit operator TComponent2(Instantiated<TComponent1, TComponent2> instantiated) => instantiated.component2;
-
-    }
-
-    #endregion
 
     namespace CodeTools {
+
+        /// <summary>Represents a series of 32 <see cref="bool"/>s held within an <see cref="int"/>.</summary>
+        public struct Mask32 : IEnumerable<bool> {
+
+            /// <summary>The only value held within <see cref="Mask32"/>.</summary>
+            public int value;
+
+            /// <summary>The (n+1)th digit of the binary number <see cref="value"/>.</summary>
+            /// <param name="index">The index of the digit from the right.</param>
+            public bool this[int index] {
+                get => (value >> index & 1) == 1;
+                set {
+                    int mask = 1 << index;
+                    bool bit = (this.value & mask) == 1;
+                    if(bit != value) {
+                        if(bit) this.value -= mask;
+                        else this.value += mask;
+                    }
+                }
+            }
+
+            /// <summary>Gets a <see cref="Mask32"/> with every value false, except for at the given index which is
+            /// instead copied from this <see cref="Mask32"/>.</summary>
+            /// <param name="index">Index of this <see cref="Mask32"/> to get.</param>
+            public Mask32 GetCulled(int index) => value & 1 << index;
+
+            /// <summary>Shorthand for "<c>new <see cref="Mask32"/> { value = value };</c>"</summary>
+            /// <param name="value">The <see cref="value"/> of the new <see cref="Mask32"/>.</param>
+            public static implicit operator Mask32(int value) => new Mask32 { value = value };
+            /// <summary>Shorthand for "<c>mask.value</c>".</summary>
+            /// <param name="mask">The <see cref="Mask32"/> to get the <see cref="value"/> from.</param>
+            public static implicit operator int(Mask32 mask) => mask.value;
+
+            /// <summary>Converts this <see cref="Mask32"/> into a useful string form.</summary>
+            /// <returns>Returns <see cref="value"/> in binary form with a few extra zeros beforehand.</returns>
+            public override string ToString() {
+                string s = Convert.ToString(value, 2);
+                var length = 32 - s.Length;
+                char[] c = new char[length];
+                for(var i = 0; i < length; i++) c[i] = '0';
+                s = new string(c) + s;
+                return s;
+            }
+
+            IEnumerator<bool> IEnumerable<bool>.GetEnumerator() => new Enumerator { mask = this };
+            IEnumerator IEnumerable.GetEnumerator() => new Enumerator { mask = this };
+            private class Enumerator : IEnumerator<bool> {
+                public Mask32 mask;
+                int index = -1;
+                public bool Current => mask[index];
+                object IEnumerator.Current => mask[index];
+                public bool MoveNext() => ++index < 32;
+                public void Reset() => index = -1;
+                public void Dispose() { }
+            }
+
+        }
+
+        public static class Direction3Int {
+            public static Vector3Int PosX = new Vector3Int(+1, 0, 0);
+            public static Vector3Int NegX = new Vector3Int(-1, 0, 0);
+            public static Vector3Int PosY = new Vector3Int(0, +1, 0);
+            public static Vector3Int NegY = new Vector3Int(0, -1, 0);
+            public static Vector3Int PosZ = new Vector3Int(0, 0, +1);
+            public static Vector3Int NegZ = new Vector3Int(0, 0, -1);
+        }
 
         namespace Math {
 
@@ -299,7 +536,7 @@ namespace KineticEnergy {
                 /// </summary>
                 /// <returns>Returns 'true' if (l1.a * l2.b) - (l2.a * l1.b) == 0.</returns>
                 public static bool AreParallel(Line line1, Line line2) {
-                    float delta = (line1.a * line2.b) - (line2.a * line1.b);
+                    float delta = line1.a * line2.b - line2.a * line1.b;
                     if(delta == 0) return true;
                     else return false;
                 }
@@ -308,7 +545,7 @@ namespace KineticEnergy {
                 /// Determines if the given value exists.
                 /// </summary>
                 /// <returns>Returns 'true' if the number is not Infinity and is not NaN.</returns>
-                public static bool Exists(float number) { return (!float.IsInfinity(number)) && (!float.IsNaN(number)); }
+                public static bool Exists(float number) { return !float.IsInfinity(number) && !float.IsNaN(number); }
 
                 /// <summary>
                 /// Determines if the given value exists.
@@ -363,13 +600,52 @@ namespace KineticEnergy {
                     return degree;
                 }
 
-                /// <summary>
-                /// Rounds the given number to the nearest multiple of another number.
-                /// </summary>
+                /// <summary>Rounds the given number to the nearest multiple of another number.</summary>
                 /// <param name="number">Input number.</param>
                 /// <param name="multiple">Input number will be rounded to some (multiple * n).</param>
-                /// <returns>Returns the multiple closest to number.</returns>
-                public static float RoundToMultiple(float number, float multiple) => Mathf.RoundToInt(number / multiple) * multiple;
+                /// <remarks>Returns some (multiple * n)</remarks>
+                public static float RoundToMultiple(float number, float multiple)
+                    => Mathf.RoundToInt(number / multiple) * multiple;
+                /// <summary>Rounds the given number to the nearest multiple of another number.</summary>
+                /// <param name="number">Input number.</param>
+                /// <param name="multiple">Input number will be rounded to some (multiple * n).</param>
+                /// <remarks>Returns some (multiple * n)</remarks>
+                public static float RoundToMultiple(ref float number, float multiple)
+                    => number = Mathf.RoundToInt(number / multiple) * multiple;
+
+                /// <summary>Rounds the given <see cref="Vector3"/> components to the nearest multiple of another number.</summary>
+                /// <param name="vector">Input <see cref="Vector3"/>.</param>
+                /// <param name="multiple">Input <see cref="Vector3"/>'s components will be rounded to some (multiple * n).</param>
+                /// <returns>Returns a new <see cref="Vector3"/> which components are some (multiple * n).</returns>
+                public static Vector3 RoundToMultiple(Vector3 vector, float multiple)
+                    => new Vector3(RoundToMultiple(vector.x, multiple),
+                                   RoundToMultiple(vector.y, multiple),
+                                   RoundToMultiple(vector.z, multiple));
+                /// <summary>Rounds the given <see cref="Vector3"/> components to the nearest multiple of another number.</summary>
+                /// <param name="vector">Input <see cref="Vector3"/>.</param>
+                /// <param name="multiple">Input <see cref="Vector3"/>'s components will be rounded to some (multiple * n).</param>
+                public static void RoundToMultiple(ref Vector3 vector, float multiple) {
+                    vector.x = RoundToMultiple(vector.x, multiple);
+                    vector.y = RoundToMultiple(vector.y, multiple);
+                    vector.z = RoundToMultiple(vector.z, multiple);
+                }
+
+                /// <summary>Rounds the euler angles of the given <see cref="Quaternion"/> to the nearest multiple of another number.</summary>
+                /// <param name="quaterion">Input <see cref="Quaternion"/>.</param>
+                /// <param name="multiple">Input <see cref="Quaternion"/>'s euler angles will be rounded to some (multiple * n).</param>
+                /// <returns>Returns a new <see cref="Quaternion"/> which euler angles are some (multiple * n).</returns>
+                public static Quaternion RoundToMultiple(Quaternion quaterion, float multiple)
+                    => Quaternion.Euler(RoundToMultiple(quaterion.eulerAngles, multiple));
+                /// <summary>Rounds the euler angles of the given <see cref="Quaternion"/> to the nearest multiple of another number.</summary>
+                /// <param name="quaternion">Input <see cref="Quaternion"/>.</param>
+                /// <param name="multiple">Input <see cref="Quaternion"/>'s euler angles will be rounded to some (multiple * n).</param>
+                public static void RoundToMultiple(ref Quaternion quaternion, float multiple)
+                    => quaternion = Quaternion.Euler(RoundToMultiple(quaternion.eulerAngles, multiple));
+
+                public static Vector3Int RoundToInt(Vector3 vector)
+                    => new Vector3Int(Mathf.RoundToInt(vector.x),
+                                      Mathf.RoundToInt(vector.y),
+                                      Mathf.RoundToInt(vector.z));
 
                 #endregion
 
@@ -391,7 +667,7 @@ namespace KineticEnergy {
                 /// <returns>Returns a line that intersects the two given points.</returns>
                 public static Line LineFromTwoPoints(Vector2 point1, Vector2 point2) {
                     float a = (point1.y - point2.y) / (point1.x - point2.x);
-                    float c = point1.y - (a * point1.x);
+                    float c = point1.y - a * point1.x;
                     if(float.IsInfinity(a)) return new Line(-a, 1, c, point1.x);
                     else return new Line(-a, 1, c);
                 }
@@ -402,7 +678,7 @@ namespace KineticEnergy {
                 /// <returns></returns>
                 public static Line LineFromAngle(Vector2 point, Angle angle) {
                     float a = Mathf.Tan(angle.Radians);
-                    float c = point.y - (a * point.x);
+                    float c = point.y - a * point.x;
                     if(float.IsInfinity(a)) return new Line(-a, 1, c, point.x);
                     else return new Line(-a, 1, c);
                 }
@@ -540,14 +816,10 @@ namespace KineticEnergy {
                 /// <returns>Returns the intersection between l1 and l2.</returns>
                 public static Vector2 Intersection(Line l1, Line l2) {
                     if(l1.isVertical != l2.isVertical) {
-                        if(l1.isVertical) {
-                            return new Vector2(l1.X, l2.YFromX(l1.X));
-                        }
-                        if(l2.isVertical) {
-                            return new Vector2(l2.X, l1.YFromX(l2.X));
-                        }
+                        if(l1.isVertical) return new Vector2(l1.X, l2.YFromX(l1.X));
+                        if(l2.isVertical) return new Vector2(l2.X, l1.YFromX(l2.X));
                     }
-                    float delta = (l1.a * l2.b) - (l2.a * l1.b);
+                    float delta = l1.a * l2.b - l2.a * l1.b;
                     float x = (l2.b * l1.c - l1.b * l2.c) / delta;
                     float y = (l1.a * l2.c - l2.a * l1.c) / delta;
                     return new Vector2(x, y);
@@ -575,12 +847,12 @@ namespace KineticEnergy {
 
                     float b = d_2 - r1_2 + r2_2;
                     float x = b / (2 * d);
-                    float a = (1 / d) * Mathf.Sqrt((4 * d_2 * r2_2) - (b * b));
-                    float y = (a / 2);
+                    float a = 1 / d * Mathf.Sqrt(4 * d_2 * r2_2 - b * b);
+                    float y = a / 2;
 
                     float angle = GetAngle(c1.center, c2.center);
 
-                    Vector2[] intersections = new Vector2[2];
+                    var intersections = new Vector2[2];
                     intersections[0] = new Vector2(x, +y).Rotate(angle) + c1.center;
                     intersections[1] = new Vector2(x, -y).Rotate(angle) + c1.center;
 
@@ -860,7 +1132,7 @@ namespace KineticEnergy {
                     /// <param name="direction">direction on the line (does not need to align with the lign)</param>
                     /// <returns></returns>
                     public Vector2 PointFromDistance(Vector2 point, float distance, Vector2 direction) {
-                        return PointFromDistance(point, distance, Geometry.LinearDirection(direction.x - point.x));
+                        return PointFromDistance(point, distance, LinearDirection(direction.x - point.x));
                     }
 
                     /// <summary>
@@ -885,14 +1157,10 @@ namespace KineticEnergy {
                     public Vector2 Intersection(Line l2) {
                         Line l1 = this;
                         if(l1.isVertical != l2.isVertical) {
-                            if(l1.isVertical) {
-                                return new Vector2(l1.X, l2.YFromX(l1.X));
-                            }
-                            if(l2.isVertical) {
-                                return new Vector2(l2.X, l1.YFromX(l2.X));
-                            }
+                            if(l1.isVertical) return new Vector2(l1.X, l2.YFromX(l1.X));
+                            if(l2.isVertical) return new Vector2(l2.X, l1.YFromX(l2.X));
                         }
-                        float delta = (l1.a * l2.b) - (l2.a * l1.b);
+                        float delta = l1.a * l2.b - l2.a * l1.b;
                         float x = (l2.b * l1.c - l1.b * l2.c) / delta;
                         float y = (l1.a * l2.c - l2.a * l1.c) / delta;
                         return new Vector2(x, y);
@@ -916,15 +1184,15 @@ namespace KineticEnergy {
                         a = _a;
                         b = _b;
                         c = _c;
-                        A = Geometry.LawOfCosForAngleA(a, b, c);
-                        B = Geometry.LawOfCosForAngleB(a, b, c);
-                        C = Geometry.LawOfCosForAngleC(a, b, c);
+                        A = LawOfCosForAngleA(a, b, c);
+                        B = LawOfCosForAngleB(a, b, c);
+                        C = LawOfCosForAngleC(a, b, c);
                     }
 
                     public void SolveForAngles() {
-                        A = Geometry.LawOfCosForAngleA(a, b, c);
-                        B = Geometry.LawOfCosForAngleB(a, b, c);
-                        C = Geometry.LawOfCosForAngleC(a, b, c);
+                        A = LawOfCosForAngleA(a, b, c);
+                        B = LawOfCosForAngleB(a, b, c);
+                        C = LawOfCosForAngleC(a, b, c);
                     }
 
                     public override string ToString() {
@@ -1120,7 +1388,7 @@ namespace KineticEnergy {
                 public static Range half = new Range(-0.5f, 0.5f);
 
                 public float Size => max - min;
-                public float Center => min + (Size / 2);
+                public float Center => min + Size / 2;
                 public float Random => UnityEngine.Random.Range(min, max);
                 public float RandomSpread => (UnityEngine.Random.value * UnityEngine.Random.Range(-1.0f, +1.0f) / 2 + 0.5f) * (max - min) + min;
 
@@ -1224,9 +1492,7 @@ namespace KineticEnergy {
 
                 #region Stuff the compiler generated and will complain if it's not here.
                 public override bool Equals(object obj) {
-                    if(!(obj is Range)) {
-                        return false;
-                    }
+                    if(!(obj is Range)) return false;
 
                     var range = (Range)obj;
                     return min == range.min &&
@@ -1352,8 +1618,8 @@ namespace KineticEnergy {
                     float theta = angle.Radians;
                     float sin = Mathf.Sin(theta), cos = Mathf.Cos(theta);
                     float x = vector.x, y = vector.y;
-                    vector.x = (cos * x) - (sin * y);
-                    vector.y = (sin * x) + (cos * y);
+                    vector.x = cos * x - sin * y;
+                    vector.y = sin * x + cos * y;
                     return vector;
                 }
 
@@ -1366,8 +1632,8 @@ namespace KineticEnergy {
                 /// <returns>Returns v1.Rotate([+/-]degrees).</returns>
                 public static Vector2 RotateTo(this Vector2 v1, Vector2 v2, Angle angle) {
                     float theta = angle.Radians;
-                    if(Vector2.SignedAngle(v1, v2) > 0) return Rotate(v1, theta);
-                    else return Rotate(v1, -theta);
+                    if(Vector2.SignedAngle(v1, v2) > 0) return v1.Rotate(theta);
+                    else return v1.Rotate(-theta);
                 }
 
                 /// <summary>
@@ -1379,8 +1645,8 @@ namespace KineticEnergy {
                 /// <returns>Returns v1.Rotate([-/+]degrees).</returns>
                 public static Vector2 RotateFrom(this Vector2 v1, Vector2 v2, Angle angle) {
                     float theta = angle.Radians;
-                    if(Vector2.SignedAngle(v1, v2) < 0) return Rotate(v1, theta);
-                    else return Rotate(v1, -theta);
+                    if(Vector2.SignedAngle(v1, v2) < 0) return v1.Rotate(theta);
+                    else return v1.Rotate(-theta);
                 }
 
                 /// <summary>
@@ -1475,7 +1741,6 @@ namespace KineticEnergy {
 
             const string CONTENT_FOLDER = "Content";
             private readonly Func<Type, string, string>[] recognizers;
-            private Assembly[] assemblies;
             internal ContentLoader() {
                 behaviours = new BehaviourContent();
                 m_blockPreviews = new List<Content<BlockPreview>>();
@@ -1483,11 +1748,7 @@ namespace KineticEnergy {
                 recognizers = new Func<Type, string, string>[] {
 
                     // Behaviours //
-                    (type, origin) => {
-                        if(behaviours.Add(type, origin))
-                            return "ClientBehaviour";
-                        return "";
-                    },
+                    (type, origin) => behaviours.Add(type, origin) ? "ClientBehaviour" : "",
 
                     // Blocks //
                     (type, origin) => {
@@ -1527,38 +1788,37 @@ namespace KineticEnergy {
 
             /// <summary>Finds all mod directories and then 'processes' them.</summary>
             /// <seealso cref="ProcessDirectory(string)"/>
-            internal void FindAndProcessAll(out string[] directories) {
+            internal void FindAndProcessAll(Intangibles.Master.LevelsOfDetail logSettings, out string[] directories) {
                 directories = Directory.GetDirectories(CONTENT_FOLDER);
                 var dirCount = directories.Length;
-                var assemblies = new List<Assembly>();
                 for(int i = 0; i < dirCount; i++) {
-                    ProcessDirectory(directories[i], out var assembly);
-                    if(assembly != null) assemblies.Add(assembly);
+                    ProcessDirectory(directories[i], logSettings, out _);
                 }
-                this.assemblies = assemblies.ToArray();
             }
 
             internal void UnloadAll() {
 
-                foreach(Assembly assembly in assemblies) {
-                    // ?
-                }
+                //?
 
             }
 
             /// <summary>In this context, a directory is a set of content/mod.</summary>
             /// <param name="directory">The path to the directory.</param>
-            /// <seealso cref="FindAndProcessAll()"/>
-            internal void ProcessDirectory(string directory, out Assembly assembly) {
+            /// <seealso cref="FindAndProcessAll"/>
+            internal void ProcessDirectory(string directory, Intangibles.Master.LevelsOfDetail logSettings, out Assembly assembly) {
 
-                Debug.LogFormat(" /* Processing directory '{0}'.", directory);
+                if(CanShowLog(LevelOfDetail.Basic, logSettings.directories))
+                    Debug.LogFormat(" /* Processing directory '{0}'.", directory);
 
                 string file = directory + "\\Assembly.dll";
 
                 if(File.Exists(file)) {
 
-                    assembly = Assembly.LoadFrom(file);
-                    Debug.LogFormat("Assembly '{0}' at '{1}' was found for this directory.", assembly.FullName, file);
+                    //assembly = Assembly.LoadFrom(file);
+                    assembly = Assembly.Load(File.ReadAllBytes(file));
+
+                    if(CanShowLog(LevelOfDetail.Basic, logSettings.directories))
+                        Debug.LogFormat("Assembly '{0}' at '{1}' was found for this directory.", assembly.FullName, file);
 
                     if(AssemblyIsLegal(in assembly, out string why)) {
                         var recognizedTypes = 0; var totalTypes = 0;
@@ -1572,31 +1832,44 @@ namespace KineticEnergy {
                                 foreach(Func<Type, string, string> recognizer in recognizers) {
                                     string tName = recognizer(type, origin);
                                     if(tName != "") {
-                                        Debug.LogFormat("Found type '{0}' from '{1}' and recognized it as '{2}'.", type.FullName, file, tName);
+                                        if(CanShowLog(LevelOfDetail.High, logSettings.directories))
+                                            Debug.LogFormat("Found type '{0}' from '{1}' and recognized it as '{2}'.", type.FullName, file, tName);
                                         unrecognized = false; recognizedTypes++; break;
                                     }
                                 }
-                                if(unrecognized) Debug.LogFormat("Found type '{0}' from '{1}', but did not recognize it.", type.FullName, file);
+                                if(CanShowLog(LevelOfDetail.All, logSettings.directories))
+                                    if(unrecognized) Debug.LogFormat("Found type '{0}' from '{1}', but did not recognize it.", type.FullName, file);
                             }
 
                         } catch(Exception e) {
-                            Debug.LogErrorFormat("Assembly was returned as legal, but was unable to be loaded because an error occured." +
+                            if(CanShowLog(LevelOfDetail.Basic, logSettings.directories))
+                                Debug.LogErrorFormat("Assembly was returned as legal, but was unable to be loaded because an error occured." +
                                 " Given exception: \"{0}\".", e);
                         }
 
-                        Debug.LogFormat("{0}: Found {1} {2}, and {3} of them {4} recognized.",
+                        if(CanShowLog(LevelOfDetail.High, logSettings.directories))
+                            Debug.LogFormat("{0}: Found {1} {2}, and {3} of them {4} recognized.",
                             recognizedTypes == 0 ? "Warning" : "Results", totalTypes, totalTypes > 1 ? "total types" : "type",
                             recognizedTypes == 0 ? "none" : recognizedTypes.ToString(), recognizedTypes == 1 ? "was" : "were");
 
-                    } else Debug.LogErrorFormat("Assembly '{0}' was returned as illegal." +
-                        " Given reason: '{1}'.", file, why);
+                    } else {
+
+                        if(CanShowLog(LevelOfDetail.Basic, logSettings.directories))
+                            Debug.LogErrorFormat("Assembly '{0}' was returned as illegal." +
+                            " Given reason: '{1}'.", file, why);
+
+                    }
 
                 } else {
-                    Debug.LogWarningFormat("Could not find '{0}'.", file);
+
+                    if(CanShowLog(LevelOfDetail.Basic, logSettings.directories))
+                        Debug.LogWarningFormat("Could not find '{0}'.", file);
                     assembly = null;
+
                 }
 
-                Debug.LogFormat("Finished processing directory '{0}'. */", directory);
+                if(CanShowLog(LevelOfDetail.Basic, logSettings.directories))
+                    Debug.LogFormat("Finished processing directory '{0}'. */", directory);
 
             }
 
@@ -1698,15 +1971,11 @@ namespace KineticEnergy {
 
             /// <summary>Uses <see cref="File.ReadAllBytes(string)"/> to get the image from the '*.png' at the given path.</summary>
             /// <param name="file">The path to the file.</param>
-            public static Texture2D GetPngFile(string file) {
-                var png = new Texture2D(0, 0);
+            public static Texture2D GetPngFile(string file, TextureFormat format, bool mipChain) {
+                var png = new Texture2D(0, 0, format, mipChain);
                 png.LoadImage(File.ReadAllBytes(file));
                 png.name = file;
                 return png;
-            }
-
-            public static T GetResource<T>(string path) where T : UnityEngine.Object {
-                return Resources.Load<T>(path);
             }
 
             #endregion
@@ -1741,7 +2010,7 @@ namespace KineticEnergy {
             }
 
             /// <summary>Creates a new object of the given type.</summary>
-            public U New<U>() where U: T {
+            public U New<U>() where U : T {
                 ConstructorInfo constructor = type.GetConstructor(Type.EmptyTypes);
                 return (U)constructor.Invoke(null);
             }
@@ -1764,7 +2033,7 @@ namespace KineticEnergy {
                 /// <summary>Tells if all <see cref="IManageable"/>s this <see cref="IManager"/> manages have run <see cref="IManaged.OnSetup()"/>.</summary>
                 bool AllSetup { get; }
                 /// <summary>Returns all <see cref="IManageable"/>s this <see cref="IManager"/> manages.</summary>
-                IEnumerator<TManaged> Managed { get; }
+                IEnumerable<TManaged> Managed { get; }
 
             }
 
@@ -1817,8 +2086,27 @@ namespace KineticEnergy {
 
         }
 
-        public interface IPrefabComponentEditor<TComponent> where TComponent : Component {
-            void OnPrefab(TComponent component);
+
+        namespace Update {
+
+            public class Time {
+                public float world;
+                public float delta;
+            }
+
+            public interface IPhysicsUpdated {
+                void OnUpdate(Time time);
+            }
+
+            public interface IFrameUpdated {
+                void OnUpdate(Time time);
+            }
+
+        }
+
+
+        public interface IPrefabEditor<T> {
+            void OnPrefab(Intangibles.Master master, T prefabData, bool asPreview, BlockAttributes.BlockAttribute sender);
         }
 
     }

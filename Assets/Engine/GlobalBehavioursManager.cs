@@ -1,25 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using KineticEnergy.Content;
+﻿using KineticEnergy.Content;
+using KineticEnergy.Entities;
+using KineticEnergy.Intangibles.Client;
 using KineticEnergy.Interfaces.Input;
 using KineticEnergy.Interfaces.Manager;
-using KineticEnergy.Intangibles.Client;
-using KineticEnergy.Intangibles.Terminal;
+using KineticEnergy.Ships;
+using KineticEnergy.Ships.Blocks;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace KineticEnergy.Intangibles.Behaviours {
     public class GlobalBehavioursManager : BehavioursManager<GlobalBehaviour>, IDynamicManager<AttachedBehaviour> {
 
-        private readonly  List<ISingleInputReciever>  snglInputs =  new List<ISingleInputReciever>();
+        private readonly List<ISingleInputReciever> snglInputs = new List<ISingleInputReciever>();
         private readonly List<IMultipleInputReciever> multInputs = new List<IMultipleInputReciever>();
 
         //AttachedBehaviours
         private readonly List<AttachableRef> attachablesRefs = new List<AttachableRef>();
         private readonly List<AttachedBehaviour> attachables = new List<AttachedBehaviour>();
-        IEnumerator<AttachedBehaviour> IManager<AttachedBehaviour>.Managed => attachables.GetEnumerator();
+        IEnumerable<AttachedBehaviour> IManager<AttachedBehaviour>.Managed => attachables;
         public void RemoveMe(AttachedBehaviour me) => attachables.Remove(me);
 
-        public GlobalPaletteManager palettes { get; private set; }
+        public GlobalPaletteManager Palettes { get; internal set; }
 
 
         /// <summary><see cref="ClientData"/> array sorted by <see cref="ClientData.id"/>.</summary>
@@ -42,8 +44,7 @@ namespace KineticEnergy.Intangibles.Behaviours {
             foreach(ISingleInputReciever reciever in snglInputs) {
 
                 int index = Array.BinarySearch(clients, new ClientData(reciever.Client));
-                if(index < 0) reciever.Inputs = default;
-                else reciever.Inputs = clients[index].inputs;
+                reciever.Inputs = index < 0 ? default : clients[index].inputs;
 
             }
 
@@ -55,9 +56,7 @@ namespace KineticEnergy.Intangibles.Behaviours {
                 var inputs = new Inputs[count];
                 foreach(int id in ids) {
                     int index = Array.BinarySearch(clients, new ClientData(id));
-                    if(index < 0) inputs[count] = default;
-                    else inputs[count] = clients[index].inputs;
-                    count--;
+                    inputs[count--] = index < 0 ? default : clients[index].inputs;
                 }
 
             }
@@ -74,37 +73,49 @@ namespace KineticEnergy.Intangibles.Behaviours {
 
             //Add attachables.
             foreach(MonoBehaviour behaviour in prefab.GetComponents<MonoBehaviour>()) {
-                
+
                 //Attachables attach to MonoBehaviours.
-                Type monoType = behaviour.GetType();
-                foreach(AttachableRef attachableRef in attachablesRefs) {
+                Type behaviourType = behaviour.GetType();
+                foreach(AttachableRef attachable in attachablesRefs) {
 
                     //Which MonoBehaviours can this attachable attach to?
-                    Type attachable = attachableRef.type;
-                    foreach(Type allowedMonos in attachableRef.attribute.types) {
+                    IEnumerable<MonoBehaviour> monos = prefab.GetComponents<MonoBehaviour>();
+                    foreach(Type allowed in attachable.attribute.types) {
+                        if(attachable.attribute.AttachesTo(behaviourType)) {
 
-                        //Make sure there are no duplicates.
-                        if(attachableRef.attribute.AttachesTo(monoType)) {
-                            bool hasAttachable = false;
-                            foreach(MonoBehaviour m in prefab.GetComponents<MonoBehaviour>())
-                                if(m.GetType() == attachableRef.type) hasAttachable = true;
+                            //Make sure there are no duplicates.
+                            foreach(MonoBehaviour mono in monos)
+                                if(mono.GetType() == allowed) goto NextAllowed;
 
                             //Finally, attatch the attachable!
-                            if(!hasAttachable) {
-                                var addedBehaviour = prefab.AddComponent(attachableRef.type);
-                                PolishBehaviour((MonoBehaviour)addedBehaviour);
-                                break; //Since duplicates must be implemented via other behaviours if desired (ie. not us), we know that we can stop here.
-                            }
+                            PolishBehaviour((MonoBehaviour)
+                                prefab.AddComponent(attachable.type));
+
+                            break; //Since duplicates must be implemented via other behaviours if desired (ie. not us), we know that we can stop here.
+                            NextAllowed: continue;
+
                         }
 
                     }
+
+                    //NextAttachable: continue;
+
                 }
+
             }
 
         }
 
-        /// <summary>Adds the given <see cref="MonoBehaviour"/> to lists such as for input receiving.</summary>
+        /// <summary>Notifies this <see cref="GlobalBehavioursManager"/> that the given element is a new <see cref="MonoBehaviour"/> that now exists.</summary>
         public void PolishBehaviour(MonoBehaviour behaviour) {
+
+            // The four horsemen of the apocolypse. //
+            switch(behaviour) {
+                case Block block: block.Master = Manager; break;
+                case Entity entity: entity.Master = Manager; break;
+                case BlockGrid grid: grid.Master = Manager; break;
+                case BlockPreview preview: preview.Master = Manager; break;
+            }
 
             // Input Recievers //
             if(behaviour is ISingleInputReciever snglInput)

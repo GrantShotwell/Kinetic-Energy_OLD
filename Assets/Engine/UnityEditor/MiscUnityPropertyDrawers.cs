@@ -1,9 +1,7 @@
 ﻿#if UNITY_EDITOR
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
 using KineticEnergy.Inventory;
+using UnityEditor;
+using UnityEngine;
 
 namespace KineticEnergy.Unity {
 

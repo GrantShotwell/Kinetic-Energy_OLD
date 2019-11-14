@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using KineticEnergy.Structs;
+using KineticEnergy.Ships.Blocks;
 using KineticEnergy.Content;
 using KineticEnergy.Entities;
-using KineticEnergy.Ships.Blocks;
+using static KineticEnergy.Intangibles.Master.LevelsOfDetail;
 using static KineticEnergy.Ships.Blocks.BlockAttributes;
 
 namespace KineticEnergy.Intangibles.Behaviours {
@@ -24,6 +26,7 @@ namespace KineticEnergy.Intangibles.Behaviours {
             UpdateColorPalette();
             UpdateBlockPalette();
             UpdateEntityPalette();
+            Manager.asGlobal.Palettes = this;
         }
 
         // Delayeds //
@@ -35,11 +38,11 @@ namespace KineticEnergy.Intangibles.Behaviours {
 
         void UpdateBlockPalette() {
 
-            Prefab<Ships.BlockGrid> gridPrefab = ContentLoader.GetResource<GameObject>("Prefabs\\BlockGrid");
+            Prefab<Ships.BlockGrid> gridPrefab = Master.prefabs.grid;
             Manager.asGlobal.PolishPrefab(gridPrefab);
 
             blocks.Clear();
-            foreach(Content<BlockPreview> content in Manager.Manager.loader.m_blockPreviews) {
+            foreach(Content<BlockPreview> content in Master.loader.m_blockPreviews) {
                 Type typePreview = content.type;
                 Type typeOriginal = content.type.DeclaringType;
 
@@ -59,16 +62,26 @@ namespace KineticEnergy.Intangibles.Behaviours {
                 attributes.Sort(new Comparison<BlockAttribute>((a, b) => (int)b.Order - (int)a.Order));
 
                 //Apply the attributes.
+                #region Log Attribute (Basic)
+                if(CanShowLog(LevelOfDetail.Basic, Master.LogSettings.attributes))
+                    Debug.LogFormat("/* Applying BlockAttributes to types '{0}':'{1}' :: original:preview.", typeOriginal, typePreview);
+                #endregion
                 foreach(BlockAttribute attribute in attributes) {
-                    try { attribute.ApplyToPreview(preview); } catch(Exception e) {
-                        Debug.LogErrorFormat("Error applying attribute '{0}' to preview block prefab. See exception below.", attribute);
-                        throw e;
-                    }
-                    try { attribute.ApplyToOriginal(original); } catch(Exception e) {
-                        Debug.LogErrorFormat("Error applying attribute '{0}' to original block prefab. See exception below.", attribute);
-                        throw e;
-                    }
+                    #region Log Attribute (High)
+                    if(CanShowLog(LevelOfDetail.High, Master.LogSettings.attributes))
+                        Debug.LogFormat("Applying '{0}' to preview...", attribute, typePreview);
+                    #endregion
+                    attribute.ApplyToPreview(preview, Master);
+                    #region Log Attribute (High)
+                    if(CanShowLog(LevelOfDetail.High,Master.LogSettings.attributes))
+                        Debug.LogFormat("Applying '{0}' to original...", attribute, typeOriginal);
+                    #endregion
+                    attribute.ApplyToOriginal(original, Master);
                 }
+                #region Log Attribute (Basic)
+                if(CanShowLog(LevelOfDetail.Basic, Master.LogSettings.attributes))
+                    Debug.LogFormat("Finished applying attributes. */");
+                #endregion
 
                 //Notify the block components to do whatever else they want to do for a prefab.
                 Manager.asGlobal.PolishPrefab(preview);
@@ -87,6 +100,7 @@ namespace KineticEnergy.Intangibles.Behaviours {
 
         /// <summary>Uses <see cref="Master.loader"/> to add all values into <see cref="entities"/>.</summary>
         void UpdateEntityPalette() {
+            GlobalBehavioursManager global = Manager.asGlobal;
 
             entities.Clear();
             foreach(Content<Entity> content in Manager.Manager.loader.m_entities) {
@@ -97,11 +111,13 @@ namespace KineticEnergy.Intangibles.Behaviours {
                 var temp = (Entity)gameObject.AddComponent(content);
                 temp.enabled = false; delayeds.Add(() => Destroy(temp));
 
-                //New we make the prefab using *.BuildEntityPrefab(loader),
+                //New we make the prefab using *.BuildEntityPrefab(),
                 // then allow the GlobalBehavioursManager to 'polish' them.
                 // After that, we tie the type and the prefab in a EntityPalette.Sample(type, prefab).
+                global.PolishBehaviour(temp);
                 GameObject prefab = temp.BuildEntityPrefab();
-                Manager.asGlobal.PolishPrefab(prefab);
+                global.PolishPrefab(prefab);
+                global.PolishBehaviour(prefab.GetComponent<Entity>());
                 entities.Add(new EntityPalette.Sample(content, prefab));
 
             }
@@ -110,7 +126,7 @@ namespace KineticEnergy.Intangibles.Behaviours {
 
         void UpdateColorPalette() {
 
-            colors[0] = new ColorPalette.Sample( "Preview Valid" , new Color(0.10f, 0.90f, 0.00f, 0.30f));
+            colors[0] = new ColorPalette.Sample("Preview Valid", new Color(0.10f, 0.90f, 0.00f, 0.30f));
             colors[1] = new ColorPalette.Sample("Preview Invalid", new Color(0.90f, 0.10f, 0.00f, 0.30f));
 
         }
@@ -146,7 +162,7 @@ namespace KineticEnergy.Intangibles.Behaviours {
 
             /// <summary>Creates a new <see cref="Sample"/> from the given arguments.</summary>
             /// <param name="prefabBlock">The prefab variant of the <see cref="prefabBlock"/>.</param>
-            /// <param name="b\lockPrefab_preview">The prefab that will be cloned with <see cref="Object.Instantiate()"/></param>
+            /// <param name="prefabBlock_preview">The prefab that will be cloned with <see cref="Object.Instantiate()"/></param>
             /// <see cref="Block"/>
             /// <see cref="BlockPreview"/>
             public Sample(GameObject prefabBlock, GameObject prefabBlock_preview) {

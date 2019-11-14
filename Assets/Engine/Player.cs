@@ -1,35 +1,33 @@
-﻿using UnityEngine;
+﻿using KineticEnergy.Structs;
+using KineticEnergy.Intangibles.Behaviours;
+using KineticEnergy.Intangibles.Client;
+using KineticEnergy.Interfaces.Input;
 using KineticEnergy.Ships;
 using KineticEnergy.Ships.Blocks;
-using KineticEnergy.Interfaces.Input;
-using KineticEnergy.Intangibles.Client;
-using KineticEnergy.Intangibles.Behaviours;
+using UnityEngine;
 
 namespace KineticEnergy.Entities {
 
     #region Unity Editor
     #endregion
 
-    // TODO: //
-    // Add support for stuff other than blocks in the hotbar.
-
     public class Player : Entity, ISingleInputReciever {
 
         #region Properties
 
-        /// <summary></summary>
+        /// <summary>The possible gamemode of a <see cref="Player"/>.</summary>
         public enum Gamemode { Creative, Survival, Spectator }
         /// <summary>The current <see cref="Gamemode"/> of this player.</summary>
         public Gamemode gamemode;
 
-        /// <summary><see cref="Intangibles.Client.Inputs"/></summary>
         public Inputs Inputs { get; set; }
+        public bool holdInputs = false;
 
         public float movePower = 3.0f;
         public float jumpPower = 3.0f;
 
-        /// <summary>This player's <see cref="Hotbar"/>.</summary>
-        public Hotbar hotbar { get; private set; } = new Hotbar();
+        /// <summary>This player's <see cref="TenSlots"/>.</summary>
+        public TenSlots Hotbar { get; private set; } = new TenSlots();
 
         public AnimationCurve lookSensitivityCurve = new AnimationCurve(new Keyframe(0f, 0.5f, 0f, 5f), new Keyframe(1f, 2.5f, 0f, 0f));
         public float lookSensitivityMultiplier = 2.0f;
@@ -37,89 +35,116 @@ namespace KineticEnergy.Entities {
         public AnimationCurve rotateSensitivityCurve = new AnimationCurve(new Keyframe(0f, 0.5f, 0f, 5f), new Keyframe(1f, 2.5f, 0f, 0f));
         public float rotateSensitivityMultiplier = 5.0f;
 
-        bool isGrounded => false;
+        bool IsGrounded => false;
 
-        public int Client => global.clients[0];
-        GlobalBehavioursManager global;
+        public int Client => Global.clients[0];
 
-        new Camera camera;
+        public Rigidbody Rigidbody { get; set; }
+        public BlockGridEditor BlockGridEditor { get; set; }
+
+        public GlobalPaletteManager palettes;
 
         #endregion
 
         #region Setup
 
-        new Rigidbody rigidbody;
-        BlockGridEditor blockGridEditor;
-        GlobalPaletteManager palettes;
         public void Start() {
 
-            // TEMP: terminal view
-            camera = Camera.main;
-            mTemp_originalCamPos = camera.transform.localPosition;
-
             //Get Rigidbody.
-            rigidbody = GetComponent<Rigidbody>();
-            //Get BLockGridEditor.
-            blockGridEditor = GetComponent<BlockGridEditor>();
-            //Get GlobalBehavioursManager.
-            global = FindObjectOfType<GlobalBehavioursManager>();
-            global.PolishBehaviour(this);
+            Rigidbody = GetComponent<Rigidbody>();
+
+            //Get BlockGridEditor.
+            BlockGridEditor = GetComponent<BlockGridEditor>();
+
             //Get GlobalPaletteManager.
-            palettes = global.gameObject.GetComponent<GlobalPaletteManager>();
+            palettes = Global.Palettes;
+
             //Temporary hotbar setup.
             var blockPaletteSize = palettes.blocks.Count;
             for(int i = 0; i < blockPaletteSize && i < 10; i++)
-                hotbar.slots[i] = palettes.blocks[i];
+                Hotbar.Slots[i] = palettes.blocks[i];
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
         }
 
         #endregion
 
         #region Behaviour
 
+
         Vector3 m_blockrotInput = Vector3.zero;
         bool m_rbX, m_rbY, m_rbZ;
+        bool m_selected = false;
+        private GameObject GetPreview() => BlockGridEditor.Preview ? BlockGridEditor.Preview.gameObject : null;
         public void FixedUpdate() {
-            var preview = blockGridEditor.preview == null ? null : blockGridEditor.preview.gameObject;
+
+            if(holdInputs) Inputs = default;
+            Inputs inputs = Inputs;
+
+            #region Preview
+            var preview = GetPreview();
 
             //Find which hotbar item is being selected.
-            var _hotbar = Inputs.hotbar;
-            //If no number button was pushed, hotbarInput will be 0 or -5.
-            if(_hotbar > -1) {
-                //If the selected index has changed, delete the old and create the new.
-                if(hotbar.selectedIndex != _hotbar) {
-                    hotbar.selectedIndex = _hotbar;
-                    if(preview) Destroy(preview);
-                    if(hotbar.selected != null) {
-                        var prefab = Instantiate(hotbar.selected.prefabBlock_preview);
-                        blockGridEditor.preview = prefab.GetComponent<BlockPreview>();
-                        preview = blockGridEditor.preview == null ? null : blockGridEditor.preview.gameObject;
-                        if(!preview) {
-                            Debug.LogWarningFormat("Tried to instantiate '{0}' as a BlockPreview prefab, but it had no BlockPreview component!", prefab);
-                            Destroy(prefab);
-                        }
+            var hotbarInput = inputs.hotbar;
+
+            //If no number button was pushed, hotbarInput will be -1.
+            if(hotbarInput != -1) { //if it was not-not pressed...
+
+                //If the selected index hasn't changed, then toggle 'm_selected'.
+                if(Hotbar.SelectedIndex == hotbarInput) {
+                    m_selected = !m_selected;
+                    if(m_selected) goto CreatePreview;
+                    else if(preview) Destroy(preview);
+
+                    //If the selected index has changed, then update the preview.
+                } else {
+                    Hotbar.SelectedIndex = hotbarInput;
+                    goto CreatePreview;
+                }
+
+                //Will stop here unless this line was skipped with 'goto CreatePreview'.
+                preview = GetPreview();
+                goto Break1;
+
+                CreatePreview:
+                //Delete the old, create the new.
+                if(preview) Destroy(preview);
+                if(Hotbar.Selected == null) {
+                    preview = null;
+                } else {
+                    var prefab = Instantiate(Hotbar.Selected.prefabBlock_preview);
+                    BlockGridEditor.Preview = prefab.GetComponent<BlockPreview>();
+                    preview = GetPreview();
+                    Global.PolishBehaviour(preview.GetComponent<BlockPreview>());
+                    if(!preview) {
+                        Debug.LogWarningFormat("Tried to instantiate '{0}' as a BlockPreview prefab, but it had no BlockPreview component!", prefab);
+                        Destroy(prefab);
                     }
                 }
             }
+            Break1:
 
             //Do stuff with the preview if it exists.
-            if(preview != null) {
+            if(preview) {
 
                 //Spin Preview//
                 {
                     Vector3 blockrot;
 
                     //If rotating on a grid, rotate by 90 degree intervals.
-                    if(blockGridEditor.grid != null) {
+                    if(BlockGridEditor.Grid != null) {
 
                         //"GetAxisRaw --> GetButtonDown" using booleans stored across frames.
 
-                        /* X */ var rbX = Inputs.spin.x;
+                        var rbX = inputs.spin.x; // X //
                         m_blockrotInput.x = m_rbX ? rbX : 0; m_rbX = rbX == 0;
 
-                        /* Y */ var rbY = Inputs.spin.y;
+                        var rbY = inputs.spin.y; // Y //
                         m_blockrotInput.y = m_rbY ? rbY : 0; m_rbY = rbY == 0;
 
-                        /* Z */ var rbZ = Inputs.spin.z;
+                        var rbZ = inputs.spin.z; // Z //
                         m_blockrotInput.z = m_rbZ ? rbZ : 0; m_rbZ = rbZ == 0;
 
                         //Inputs are normalized (+/-1), so just multiply by 90 to get 90 degree rotations.
@@ -132,7 +157,7 @@ namespace KineticEnergy.Entities {
                             preview.transform.RotateAround(preview.transform.position, this.transform.up, blockrot.y);
                             preview.transform.RotateAround(preview.transform.position, this.transform.forward, blockrot.z);
 
-                            //Round the preview's rotation.
+                            //Round the preview's rotation to a multiple of 90 degrees.
                             var qF = preview.transform.rotation;
                             var vF = qF.eulerAngles;
                             vF.x = CodeTools.Math.Geometry.RoundToMultiple(vF.x, 90f);
@@ -141,15 +166,15 @@ namespace KineticEnergy.Entities {
                             qF = Quaternion.Euler(vF);
 
                             //Apply the rotation to the editor.
-                            blockGridEditor.rotation = qF;
+                            BlockGridEditor.Rotation = qF;
 
                         }
 
-                    //If we are not rotating on a grid, then do it smooooooooothly.
+                        //If we are not rotating on a grid, then do it smooooooooothly.
                     } else {
 
                         //Get the inputs. Nothing fancy here.
-                        m_blockrotInput = Inputs.spin;
+                        m_blockrotInput = inputs.spin;
 
                         //Aformentioned "smoooooooooth"-ness.
                         blockrot = m_blockrotInput * rotateSensitivityCurve.Evaluate(m_blockrotInput.magnitude) * rotateSensitivityMultiplier;
@@ -163,83 +188,98 @@ namespace KineticEnergy.Entities {
 
                 //Place Preview//
                 {
-                    if(Inputs.primary.Down && !Inputs.terminal) blockGridEditor.TryPlaceBlock();
-                    else preview.SetActive(Inputs.primary.IsFree);
+                    if(inputs.primary.Down && !inputs.terminal) BlockGridEditor.TryPlaceBlock();
+                    else preview.SetActive(inputs.primary.IsFree);
                 }
 
             }
+            #endregion
+
+            // TEMP: selectables
+            if(!preview) {
+                if(Physics.Raycast(new Ray(transform.position + new Vector3(0.0f, 0.7f, 0.0f), transform.forward), out var hit, mTemp_mask)) {
+
+                    var selected = hit.collider.gameObject;
+                    if(selected.layer == 11) {
+                        var selectable = selected.GetComponent<Selectable>();
+                        if(selectable) {
+                            selectable.show = true;
+                            if(inputs.primary.Down)
+                                selectable.Select(this);
+                        } else Debug.LogWarningFormat("A GameObject ('{0}') on layer 11 did not have a '{1}' component.", selected, nameof(Selectable));
+                    }
+
+                }
+            }
 
             if(Inputs.scndary.Down)
-                blockGridEditor.RemoveBlock();
+                BlockGridEditor.RemoveBlock();
 
             if(Input.GetKeyDown(KeyCode.Escape)) {
-                #if UNITY_EDITOR
+#if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPaused = true;
-                #elif UNITY_STANDALONE
+#else
                 UnityEngine.Application.Quit();
-                #endif
+#endif
             }
 
-            // Movement //
-            var _move = Inputs.move;
-            if(isGrounded) {
-                _move.x *= movePower;
-                _move.y *= jumpPower;
-                _move.z *= movePower;
+            #region Movement
+            var move = inputs.move;
+            if(IsGrounded) {
+                move.x *= movePower;
+                move.y *= jumpPower;
+                move.z *= movePower;
             } else {
-                _move *= movePower;
+                move *= movePower;
             }
-            _move = transform.rotation * _move;
-            rigidbody.AddForce(_move);
+            move = transform.rotation * move;
+            Rigidbody.AddForce(move * Rigidbody.mass);
+            #endregion
 
-            // Rotation //
-            if(!mTemp_terminal) {
-                var _look = new Vector3 {
-                    x = -Inputs.look.y,
-                    y = +Inputs.look.x
-                };
-                _look *= lookSensitivityMultiplier * lookSensitivityCurve.Evaluate(_look.magnitude);
-                _look.z = Inputs.look.z;
-                transform.Rotate(_look);
-            }
+            #region Rotation
+            var look = new Vector3 {
+                x = -inputs.look.y,
+                y = +inputs.look.x
+            };
+            look *= lookSensitivityMultiplier * lookSensitivityCurve.Evaluate(look.magnitude);
+            look.z = inputs.look.z;
+            transform.Rotate(look);
+            #endregion
 
-            // TEMP: get camera to move for terminal view. //
-            mTemp_terminal = Inputs.terminal;
-            if(Inputs.terminal.Down) {
-                Cursor.lockState = CursorLockMode.Confined;
-                camera.transform.localPosition = (Vector3.back * 25) + mTemp_originalCamPos;
-            } else
-            if(Inputs.terminal.Held) {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-                camera.transform.localPosition = (Vector3.back * 25) + mTemp_originalCamPos;
-            } else {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-                camera.transform.localPosition = mTemp_originalCamPos;
-            }
-            
+            //// TEMP: get camera to move for terminal view. //
+            //mTemp_terminal = Inputs.terminal;
+            //if(Inputs.terminal.Down) {
+            //    Cursor.lockState = CursorLockMode.Confined;
+            //    camera.transform.localPosition = (Vector3.back * 25) + mTemp_originalCamPos;
+            //} else
+            //if(Inputs.terminal.Held) {
+            //    Cursor.lockState = CursorLockMode.None;
+            //    Cursor.visible = true;
+            //    camera.transform.localPosition = (Vector3.back * 25) + mTemp_originalCamPos;
+            //} else {
+            //    Cursor.lockState = CursorLockMode.Locked;
+            //    Cursor.visible = false;
+            //    camera.transform.localPosition = mTemp_originalCamPos;
+            //}
+
         }
 
-        // TEMP: get camera to move for terminal view. //
-        bool mTemp_terminal = false;
-        Vector3 mTemp_originalCamPos;
-        //Vector3 mTemp_currentCamDelta;
+        // TEMP: selectables
+        public LayerMask mTemp_mask;
 
-        public class Hotbar {
-            public BlockPalette.Sample[] slots = new BlockPalette.Sample[10];
-            public int selectedIndex = 0;
-            public BlockPalette.Sample selected => slots[selectedIndex];
+        public class TenSlots {
+            public BlockPalette.Sample[] Slots { get; set; } = new BlockPalette.Sample[10];
+            public int SelectedIndex { get; set; } = 0;
+            public BlockPalette.Sample Selected => Slots[SelectedIndex];
         }
 
         #endregion
 
-        public override GameObject BuildEntityPrefab() {
-            var prefab = Instantiate(Resources.Load<GameObject>("Prefabs\\Player"));
-            //prefab.SetActive(false);
+        public override Prefab BuildEntityPrefab() {
+            var prefab = new Prefab(Master.prefabs.player.Instantiate().gameObject);
+            prefab.gameObject.SetActive(true);
             return prefab;
         }
-
     }
 
 }

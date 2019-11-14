@@ -1,17 +1,13 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using TMPro;
-using KineticEnergy;
-using KineticEnergy.Content;
+using KineticEnergy.Ships;
+using KineticEnergy.Ships.Blocks;
+using KineticEnergy.Structs;
 using KineticEnergy.Interfaces.Manager;
 using KineticEnergy.Intangibles.Terminal;
 using KineticEnergy.Intangibles.Behaviours;
-using KineticEnergy.Ships;
-using KineticEnergy.Ships.Blocks;
-using System;
 
 namespace KineticEnergy.Intangibles.UI {
 
@@ -21,63 +17,20 @@ namespace KineticEnergy.Intangibles.UI {
 
         //TerminalWindows
         private readonly List<TerminalWindow> terminalWindows = new List<TerminalWindow>();
-        IEnumerator<TerminalWindow> IManager<TerminalWindow>.Managed => terminalWindows.GetEnumerator();
+        IEnumerable<TerminalWindow> IManager<TerminalWindow>.Managed => terminalWindows;
         public void RemoveMe(TerminalWindow me) => terminalWindows.Remove(me);
 
         /// <summary>Shorthand for "<c>this.Manager.asClient.camera</c>".</summary>
         new public Camera camera => Manager.asClient.camera;
 
-        public struct CanvasStruct {
-            public readonly GameObject gameObject;
-            public readonly Canvas component;
-            public readonly RectTransform transform;
-            public CanvasStruct(GameObject canvasGameObject) {
-                gameObject = canvasGameObject;
-                component = gameObject.GetComponent<Canvas>();
-                transform = (RectTransform)component.transform;
-            }
-            public static implicit operator GameObject(CanvasStruct canvas) { return canvas.gameObject; }
-            public static implicit operator Canvas(CanvasStruct canvas) { return canvas.component; }
-        }
-        public CanvasStruct canvas;
-
-        public struct EventsStruct {
-            public readonly GameObject gameObject;
-            public readonly EventSystem component;
-            public readonly Transform transform;
-            public EventsStruct(GameObject canvasGameObject) {
-                gameObject = canvasGameObject;
-                component = gameObject.GetComponent<EventSystem>();
-                transform = component.transform;
-            }
-            public static implicit operator GameObject(EventsStruct events) { return events.gameObject; }
-            public static implicit operator EventSystem(EventsStruct events) { return events.component; }
-        }
-        public EventsStruct events;
-
-        public Prefabs prefabs;
-        public struct Prefabs {
-            public Prefab<TerminalWindow> terminal;
-            public Prefab<Image> imageUI;
-            public Prefab<TextMeshProUGUI> textUI;
-            public Prefab<Button> buttonUI;
-        }
+        Instantiated<Canvas> canvas;
+        Instantiated<EventSystem> events;
 
         public override void OnSetup() {
 
             //Create Canvas and EventSystem.
-            canvas = new CanvasStruct(Instantiate(ContentLoader.GetResource<GameObject>("Prefabs\\Canvas")));
-            canvas.transform.SetParent(transform, false);
-            events = new EventsStruct(Instantiate(ContentLoader.GetResource<GameObject>("Prefabs\\EventSystem")));
-            events.transform.parent = transform;
-
-            //Create prefabs.
-            prefabs = new Prefabs() {
-                terminal = ContentLoader.GetResource<GameObject>("Prefabs\\TerminalWindow"),
-                imageUI = ContentLoader.GetResource<GameObject>("Prefabs\\ImageUI"),
-                textUI = ContentLoader.GetResource<GameObject>("Prefabs\\TextUI"),
-                buttonUI = ContentLoader.GetResource<GameObject>("Prefabs\\ButtonUI")
-            };
+            canvas = Master.prefabs.canvas.Instantiate(transform);
+            events = Master.prefabs.events.Instantiate(transform);
 
         }
 
@@ -105,7 +58,7 @@ namespace KineticEnergy.Intangibles.UI {
 
                     foreach(TerminalMenu menu in blockTrm.Menus) {
                         menu.block = block;
-                        var window = prefabs.terminal.Instantiate(canvas.transform);
+                        var window = Master.prefabs.terminal.Instantiate(canvas.gameObject.transform);
                         menu.Manager = window;
                         window.component.Manager = this;
                         window.component.menu = menu;
@@ -121,7 +74,7 @@ namespace KineticEnergy.Intangibles.UI {
             //AllSetup
             AllSetup = true;
             foreach(TerminalWindow window in terminalWindows) {
-                if(window.menu.block.grid == grid) {
+                if(window.menu.block.Grid == grid) {
                     window.OnAllSetup();
                 }
             }
@@ -143,7 +96,7 @@ namespace KineticEnergy.Intangibles.UI {
         }
 
         public TerminalWindow AddTerminalMenu(TerminalMenu menu) {
-            var window = prefabs.terminal.Instantiate();
+            var window = Master.prefabs.terminal.Instantiate();
             window.gameObject.transform.parent = transform;
             window.component.menu = menu;
             window.component.OnSetup();

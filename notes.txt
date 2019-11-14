@@ -1,0 +1,21 @@
+﻿
+//-// Todo //-//
+
+ * Features *
+  - Driveable grids.
+  - Add support for items other than blocks in the hotbar.
+ * Code *
+  - 
+ * Bugs *
+  - Player selection is from center of player, not camera.
+  - Fix grid not being deleted when all of its blocks are gone.
+  - That thing where hotbar deselection works only when it feels like it?
+
+//-//-//-//-//
+
+
+//-// Other //-//
+
+ - 
+
+//-//-//-//-//

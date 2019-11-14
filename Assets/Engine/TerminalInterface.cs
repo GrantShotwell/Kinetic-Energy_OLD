@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using KineticEnergy.Interfaces.Manager;
+using KineticEnergy.Ships.Blocks;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using KineticEnergy.Ships.Blocks;
-using KineticEnergy.Interfaces.Manager;
 using UnityEngine.UI;
-using TMPro;
 
 namespace KineticEnergy.Intangibles.Terminal {
 
@@ -28,7 +26,7 @@ namespace KineticEnergy.Intangibles.Terminal {
         public TerminalWindow Manager { get; set; }
         //IManager overrides
         public bool AllSetup { get; private set; }
-        public IEnumerator<TerminalItem> Managed => (IEnumerator<TerminalItem>)items.GetEnumerator();
+        public IEnumerable<TerminalItem> Managed => items;
 
         /// <summary>Shorthand for "<c>this.Manager.Manager</c>".</summary>
         public UI.UIManager uiManager => Manager.Manager;
@@ -153,7 +151,7 @@ namespace KineticEnergy.Intangibles.Terminal {
 
         public override void OnSetup() {
             base.OnSetup();
-            buttonUI = uiManager.prefabs.buttonUI.Instantiate(window.transform);
+            buttonUI = uiManager.Master.prefabs.buttonUI.Instantiate(window.transform);
             buttonUI.onClick.AddListener(OnClick);
         }
 

@@ -1,12 +1,8 @@
-﻿using System.Collections;
+﻿using KineticEnergy.CodeTools.Enumerators;
+using KineticEnergy.Intangibles.UI;
+using KineticEnergy.Interfaces.Manager;
 using System.Collections.Generic;
 using UnityEngine;
-using KineticEnergy.CodeTools.Enumerators;
-using KineticEnergy.Interfaces.Input;
-using KineticEnergy.Interfaces.Manager;
-using KineticEnergy.Intangibles.UI;
-using KineticEnergy.Intangibles.Client;
-using KineticEnergy.Intangibles.Behaviours;
 
 namespace KineticEnergy.Intangibles.Terminal {
 
@@ -17,7 +13,7 @@ namespace KineticEnergy.Intangibles.Terminal {
         public UIManager Manager { get; set; }
         //IManager overrides
         public bool AllSetup { get; private set; }
-        public IEnumerator<TerminalMenu> Managed => new PropertyEnumerable<TerminalMenu>(menu).GetEnumerator();
+        public IEnumerable<TerminalMenu> Managed => new PropertyEnumerable<TerminalMenu>(menu);
 
         public RectTransform rectTransform { get; private set; }
         /// <summary>Shorthand for "<c>rectTransform.rect</c>"</summary>

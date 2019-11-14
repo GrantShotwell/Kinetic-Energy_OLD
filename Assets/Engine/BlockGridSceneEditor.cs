@@ -1,10 +1,7 @@
 ﻿#if UNITY_EDITOR
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using KineticEnergy.Ships;
 using KineticEnergy.Ships.Blocks;
 using UnityEditor;
+using UnityEngine;
 
 namespace KineticEnergy.Ships {
 
@@ -56,12 +53,12 @@ namespace KineticEnergy.Ships {
                 grid = look.transform.gameObject.GetComponent<BlockGrid>();
                 if(grid != null) {
 
-                    Vector3 alignedPosition = grid.AlignWorldPoint(look.point);
+                    Vector3 alignedPosition = grid.WorldPoint_to_WorldGrid(look.point);
                     selectedBlock.transform.position = alignedPosition;
                     selectedBlock.transform.rotation = grid.transform.rotation;
 
 
-                //If it doesn't have a grid, just put the preview at the look.point.
+                    //If it doesn't have a grid, just put the preview at the look.point.
                 } else {
 
                     selectedBlock.transform.position = look.point;
@@ -69,7 +66,7 @@ namespace KineticEnergy.Ships {
                 }
 
 
-            //If nothing is being targeted, disable the preview.
+                //If nothing is being targeted, disable the preview.
             } else {
 
                 look.point = sceneCamera.transform.position + (direction * distance);
@@ -80,12 +77,11 @@ namespace KineticEnergy.Ships {
             if(Event.current.type == EventType.MouseDown) {
                 if(Event.current.button == 0) {
                     if(grid != null) {
-                        selectedBlock.Place(grid, grid.WorldPointToGrid(selectedBlock.transform.position));
+                        selectedBlock.Place(grid, grid.WorldPoint_to_LocalWorld(selectedBlock.transform.position));
                     } else {
                         selectedBlock.PlaceNewGrid();
                     }
-                }
-                else if(Event.current.button == 1) {
+                } else if(Event.current.button == 1) {
                     if(look.transform != null) {
                         var possibleBlock = look.transform.gameObject;
                         if(possibleBlock != null) {

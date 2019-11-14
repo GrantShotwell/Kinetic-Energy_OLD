@@ -13,8 +13,8 @@ InputManager:
     positiveButton: right
     altNegativeButton: 
     altPositiveButton: 
-    gravity: 0
-    dead: 0
+    gravity: 1
+    dead: 0.001
     sensitivity: 0.1
     snap: 1
     invert: 0
@@ -29,8 +29,8 @@ InputManager:
     positiveButton: up
     altNegativeButton: 
     altPositiveButton: 
-    gravity: 0
-    dead: 0
+    gravity: 1
+    dead: 0.001
     sensitivity: 0.1
     snap: 1
     invert: 0
@@ -266,7 +266,7 @@ InputManager:
     descriptiveName: Select Item n+5
     descriptiveNegativeName: 
     negativeButton: 
-    positiveButton: 
+    positiveButton: left shift
     altNegativeButton: 
     altPositiveButton: 
     gravity: 1000

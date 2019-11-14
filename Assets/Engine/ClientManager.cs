@@ -1,7 +1,7 @@
-﻿using System;
-using UnityEngine;
+﻿using KineticEnergy.Intangibles.Behaviours;
 using KineticEnergy.Intangibles.Server;
-using KineticEnergy.Intangibles.Behaviours;
+using System;
+using UnityEngine;
 
 namespace KineticEnergy.Intangibles.Client {
 
@@ -12,9 +12,23 @@ namespace KineticEnergy.Intangibles.Client {
         public ClientData client;
         public ServerManager server;
 
+        [Serializable]
+        public struct CameraSettings {
+            /// <summary>The focus of the camera.</summary>
+            public GameObject focus;
+            /// <summary>Who is the second person? Only used in <see cref="Mode.SecondPerson"/>.</summary>
+            public GameObject viewer;
+            public enum Mode { FirstPerson, SecondPerson, ThirdPerson }
+            public Mode mode;
+            public Vector3 offset;
+            public Camera component;
+            public static implicit operator Camera(CameraSettings camera) => camera.component;
+        }
+        public new CameraSettings camera;
+
         public override void OnAllSetup() {
             client = new ClientData(UnityEngine.Random.Range(int.MinValue, int.MaxValue));
-            server = Manager.Manager.server.GetComponent<ServerManager>();
+            server = Manager.Manager.Server.GetComponent<ServerManager>();
             server.Connect(client);
             client.inputs.hotbar = -1;
         }
@@ -52,17 +66,16 @@ namespace KineticEnergy.Intangibles.Client {
                 bool hotbar4 = Input.GetButtonDown("Hotbar 4");
                 bool hotbar5 = Input.GetButtonDown("Hotbar 5");
 
-                var hotbar = 0;
-                /**/ if(hotbar1) hotbar = 0;
+                var hotbar = -1;
+                /**/
+                if(hotbar1) hotbar = 0;
                 else if(hotbar2) hotbar = 1;
                 else if(hotbar3) hotbar = 2;
                 else if(hotbar4) hotbar = 3;
                 else if(hotbar5) hotbar = 4;
                 bool any = hotbar1 || hotbar2 || hotbar3 || hotbar4 || hotbar5;
-                if(any) {
-                    if(Input.GetButton("Hotbar ALT")) hotbar += 5;
-                    client.inputs.hotbar = hotbar;
-                }
+                if(any && Input.GetButton("Hotbar ALT")) hotbar += 5;
+                client.inputs.hotbar = hotbar;
 
             }
 
@@ -155,13 +168,16 @@ namespace KineticEnergy.Intangibles.Client {
         public Button terminal;
 
         public void Smooth(Inputs last) {
+
+            if(hotbar == last.hotbar) hotbar = -1;
             primary.Smooth(last.primary);
             scndary.Smooth(last.scndary);
+
         }
 
         public override string ToString() {
             return string.Format("Move: {0}, Look: {1}, Spin: {2}, Hotbar: {3}, Primary: {4}, Secondary: {5}.",
-                                        move,      look,      spin,       hotbar,       primary,       scndary);
+                                        move, look, spin, hotbar, primary, scndary);
         }
 
     }
@@ -190,13 +206,18 @@ namespace KineticEnergy.Intangibles.Client {
         public State state { get; private set; }
         /// <summary>Creates a new <see cref="Button"/> with the given values.</summary>
         /// <param name="state">The <see cref="State"/> of this button.</param>
-        public Button(State state) { this.state = state; }
+        public Button(State state)
+            => this.state = state;
+        /// <summary>Creates a new <see cref="Button"/> with a <see cref="state"/> of <see cref="State.Held"/> or <see cref="State.Down"/>.</summary>
+        /// <param name="isDown">If true, <see cref="state"/> will be <see cref="State.Held"/>, otherwise will be <see cref="State.Down"/>.</param>
+        public Button(bool isDown)
+            => state = isDown ? State.Held : State.Idle;
         /// <summary>Creates a new <see cref="Button"/> with values from <see cref="Input"/>.</summary>
         /// <param name="name">Name of the <see cref="Input"/> axis to get the button from.</param>
         public Button(string name) =>
             state = Input.GetButtonDown(name) ? State.Down
                   : Input.GetButtonUp(name) ? State.Free
-                  : Input.GetButton(name) ? State.Held 
+                  : Input.GetButton(name) ? State.Held
                   : State.Idle;
         #endregion
 
@@ -220,24 +241,22 @@ namespace KineticEnergy.Intangibles.Client {
         #endregion
 
         #region Smooth
-
         /// <summary>Attempts to 'smooth' incoming inputs by comparing the last known frame, its prediction for the current frame, and the current frame (this).</summary>
         /// <param name="last">The last frame of this <see cref="Button"/>.</param>
         public void Smooth(Button last) {
             Button predicted = last.NextFrame, actual = this;
+            /**/
             if(predicted.Held) {
                 if(actual.IsDown) state = State.Held;
-                if(actual.IsFree) state = State.Free;
-            }
-            if(predicted.Idle) {
+                else if(actual.IsFree) state = State.Free;
+            } else if(predicted.Idle) {
                 if(actual.IsFree) state = State.Idle;
-                if(actual.IsDown) state = State.Down;
+                else if(actual.IsDown) state = State.Down;
             }
         }
-
         #endregion
 
-        #region Checks
+        #region Properties
         /// <summary>Shorthand for "<c>state == <see cref="State.Down"/> || state == <see cref="State.Held"/></c>".</summary>
         /// <remarks>Essentially the same use as <see cref="Input.GetButton"/>. Always the opposite of <see cref="IsFree"/>.
         /// <para/>Not to be confused with <see cref="Down"/>, which only checks for <see cref="State.Down"/>.</remarks>
@@ -262,11 +281,12 @@ namespace KineticEnergy.Intangibles.Client {
         #region Other
 
         public static implicit operator bool(Button button) => button.IsDown;
+        public static implicit operator Button(bool isDown) => new Button(isDown ? State.Held : State.Idle);
         public override string ToString() {
             if(state == State.Down) return "Down";
             if(state == State.Held) return "Held";
             if(state == State.Free) return "Free";
-            else                    return "None";
+            else return "None";
         }
 
         #endregion
