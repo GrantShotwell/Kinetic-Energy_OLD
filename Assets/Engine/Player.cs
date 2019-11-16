@@ -80,8 +80,7 @@ namespace KineticEnergy.Entities {
         private GameObject GetPreview() => BlockGridEditor.Preview ? BlockGridEditor.Preview.gameObject : null;
         public void FixedUpdate() {
 
-            if(holdInputs) Inputs = default;
-            Inputs inputs = Inputs;
+            Inputs inputs = holdInputs ? (default) : Inputs;
 
             #region Preview
             var preview = GetPreview();

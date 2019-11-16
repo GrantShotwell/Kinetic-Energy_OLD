@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
+using UnityEngine.VFX;
 
 namespace KineticEnergy.Intangibles {
 
@@ -58,7 +59,8 @@ namespace KineticEnergy.Intangibles {
             mPrefab_imageUI,
             mPrefab_buttonUI,
             mPrefab_terminal,
-            mPrefab_selectableBox;
+            mPrefab_selectableBox,
+            mPrefab_thrusterVFX;
         public struct Prefabs {
 
             public Prefab<BlockGrid> grid;
@@ -74,6 +76,8 @@ namespace KineticEnergy.Intangibles {
             public Prefab<Terminal.TerminalWindow> terminal;
 
             public Prefab<BoxCollider, MeshRenderer> selectableBox;
+
+            public Prefab<VisualEffect> thrustVFX;
 
         }
         public Prefabs prefabs;
@@ -146,7 +150,8 @@ namespace KineticEnergy.Intangibles {
                 imageUI = mPrefab_imageUI,
                 buttonUI = mPrefab_buttonUI,
                 terminal = mPrefab_terminal,
-                selectableBox = mPrefab_selectableBox
+                selectableBox = mPrefab_selectableBox,
+                thrustVFX = mPrefab_thrusterVFX
             };
 #pragma warning restore CS0618 // Type or member is obsolete
 

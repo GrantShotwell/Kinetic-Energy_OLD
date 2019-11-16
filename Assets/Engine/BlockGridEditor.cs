@@ -62,7 +62,7 @@ namespace KineticEnergy.Ships {
         
         public void TryPlaceBlock() {
             if(Preview != null) {
-                if(Grid != null) Preview.TryPlace(Grid, Grid.WorldPoint_to_LocalWorld(Preview.transform.position));
+                if(Grid != null) Preview.TryPlace(Grid, Grid.WorldPoint_to_LocalWorld(Preview.transform.position), Rotation);
                 else Preview.TryPlaceNewGrid();
             }
         }

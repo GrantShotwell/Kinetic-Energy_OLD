@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 using KineticEnergy.Ships.Blocks;
 using KineticEnergy.CodeTools.Enumerators;
 using KineticEnergy.Interfaces;
@@ -22,29 +23,18 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
         "Content\\Vanilla\\Blocks\\TestThruster\\ObjTest.obj")]
     [BlockAttributes.Material(
         "Content\\Vanilla\\Blocks\\ArmorBlock\\diffuse.png", true, 0)]
-    [BlockAttributes.ParticleSystem(mAttribute_EXAUST)]
-    public class Thruster : TransparentBlock, IBlockTerminal, IPrefabEditor<ParticleSystem> {
+    [BlockAttributes.ThrusterVFX(mAttribute_EXAUST)]
+    public class Thruster : TransparentBlock, IBlockTerminal, IPrefabEditor<VisualEffect> {
         const int mAttribute_EXAUST = 1;
 
-        void IPrefabEditor<ParticleSystem>.OnPrefab(Master master, ParticleSystem particles, bool asPreview, BlockAttributes.BlockAttribute sender) {
+        void IPrefabEditor<VisualEffect>.OnPrefab(Master master, VisualEffect effect, bool asPreview, BlockAttributes.BlockAttribute sender) {
             //Only intended for the ParticleSystem attribute.
             if(sender is BlockAttributes.ParticleSystem attribute) {
 
                 //Only intended for the exaust attribute.
                 if(attribute.identifier == mAttribute_EXAUST) {
 
-                    var main = particles.main;
-                    main.startSpeed = 15f;
-                    main.simulationSpace = ParticleSystemSimulationSpace.World;
-
-                    var shape = particles.shape;
-                    shape.shapeType = ParticleSystemShapeType.Cone;
-                    shape.radius = 0.1f;
-                    shape.angle = 5.0f;
-                    shape.rotation = new Vector3(-90f, 0f, 0f);
-
-                    var renderer = particles.gameObject.GetComponent<ParticleSystemRenderer>();
-                    renderer.material = master.materials.chemicalThrust;
+                    Effect = effect;
 
                 }
 
@@ -54,8 +44,13 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
         public const float FORCE = 1000000;
 
         TerminalMenu mMenu_thrusting;
-        public float Power { get; set; } = 1.00f;
-        public bool Thrusting => Power > 0.00f;
+        public float ThrustPower { get; set; } = 1.00f;
+        public bool IsThrusting => thrustForced || ThrustPower > 0.00f;
+
+        /// <summary>Override driver controls to be full thrust?</summary>
+        /// <returns>Returns the input value.</returns>
+        public bool ForceThrust(bool input) => thrustForced = input;
+        private bool thrustForced = false;
 
         private GridDriver driver;
         public void SetDriver(GridDriver value) {
@@ -63,25 +58,19 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
             driver = value;
         }
 
-        FaceMask Directions { get; set; }
-
         public IEnumerable<TerminalMenu> Menus => new PropertyEnumerable<TerminalMenu>(mMenu_thrusting);
         public UIManager Manager { get; set; }
 
-        public ParticleSystem particles;
+        public VisualEffect Effect { get; set; }
 
         public void Awake() {
 
-            //mMenu_thrusting = new TerminalMenu("Enabled",
-            //    new ButtonTerminal((value) => Thrusting = value));
-
-            Directions = (FaceMask)Geometry.RoundToMultiple(
-                transform.localRotation * Vector3.up, 1);
+            mMenu_thrusting = new TerminalMenu("Enabled",
+                new ButtonTerminal(ForceThrust));
 
         }
 
         public void Start() {
-            particles = GetComponent<ParticleSystem>();
             var driver = GetComponentInParent<GridDriver>();
             if(driver) SetDriver(driver);
         }
@@ -89,31 +78,17 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
         //Apply thruster force.
         public void FixedUpdate() {
 
-            if(driver) {
+            //If the thrust is forced, power = 1, otherwise check driver inputs if there is one.
+            ThrustPower = driver ? Vector3.Dot(driver.Move, transform.up) : thrustForced ? 1.00f : 0.00f;
 
-                float power = 1.00f;
-                FaceMask directions = Directions;
-                Vector3 move = driver.Move;
-
-                if(directions.AnyX) power *= move.x;
-                if(directions.AnyY) power *= move.y;
-                if(directions.AnyZ) power *= move.z;
-                Power = power;
-
-            } else {
-
-                Power = 0.00f;
-
-            }
-
-            bool thrusting = Thrusting;
+            bool thrusting = IsThrusting;
             if(Grid != null && thrusting) {
-                var force = FORCE * Power * Time.deltaTime;
+                var force = FORCE * ThrustPower * Time.deltaTime;
                 Grid.Rigidbody.AddForceAtPosition(transform.up * -force, transform.position);
             }
 
-            var emission = particles.emission;
-            emission.enabled = thrusting;
+            VisualEffect effect = Effect;
+            if(effect) effect.SetBool("Thrusting", IsThrusting);
 
         }
 

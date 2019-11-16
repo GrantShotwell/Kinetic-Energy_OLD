@@ -31,16 +31,18 @@ namespace KineticEnergy.Ships.Blocks {
         /// <param name="grid">The <see cref="BlockGrid"/> to place the <see cref="realBlockPrefab"/> at.</param>
         /// <param name="position">The position in grid to place the <see cref="realBlockPrefab"/> at.</param>
         /// <returns>Returns <see cref="IsPlaceable"/>.</returns>
-        public bool TryPlace(BlockGrid grid, Vector3Int position) {
-            if(IsPlaceable && grid.CanPlaceBlock(realBlockPrefab.GetComponent<Block>(), position)) Place(grid, position);
-            return IsPlaceable;
+        public bool TryPlace(BlockGrid grid, Vector3Int position, Quaternion rotation) {
+            if(IsPlaceable && grid.CanPlaceBlock(realBlockPrefab.GetComponent<Block>(), position)) {
+                Place(grid, position, rotation);
+                return true;
+            } else return false;
         }
 
         /// <summary>Places the "real" <see cref="Block"/> of this <see cref="BlockPreview"/> into the specified <see cref="BlockGrid"/> at the specified location.</summary>
         /// <param name="grid">The <see cref="BlockGrid"/> to place the <see cref="realBlockPrefab"/> at.</param>
         /// <param name="position">The position in grid to place the <see cref="realBlockPrefab"/> at.</param>
-        public void Place(BlockGrid grid, Vector3Int position) {
-            grid.PlaceNewBlock(realBlockPrefab, position);
+        public void Place(BlockGrid grid, Vector3Int position, Quaternion rotation) {
+            grid.PlaceNewBlock(realBlockPrefab, position, rotation);
         }
 
         /// <summary>Tests <see cref="IsPlaceable"/> before running <see cref="PlaceNewGrid"/>.</summary>
@@ -64,7 +66,7 @@ namespace KineticEnergy.Ships.Blocks {
 
             //Setup the new grid.
             BlockGrid grid = gridGameObject.GetComponent<BlockGrid>();
-            grid.PlaceNewBlock(realBlockPrefab, grid.WorldPoint_to_LocalWorld(transform.position));
+            grid.PlaceNewBlock(realBlockPrefab, grid.WorldPoint_to_LocalWorld(transform.position), Quaternion.Euler(0, 0, 0));
 
             //Return the new grid.
             return grid;

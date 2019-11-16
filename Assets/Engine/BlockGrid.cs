@@ -386,9 +386,9 @@ namespace KineticEnergy.Ships {
         /// <param name="prefab">Prefab of the "blank" GameObject.</param>
         /// <param name="gridPosition">Grid position to place the block at.</param>
         /// <remarks>Subject to clipping if <see cref="CanPlaceBlock(Block, Vector3Int)"/> is false.</remarks>
-        public void PlaceNewBlock(GameObject prefab, Vector3Int gridPosition) {
+        public void PlaceNewBlock(GameObject prefab, Vector3Int gridPosition, Quaternion localRotation) {
             GameObject blockGameObject = Instantiate(prefab);
-            //blockGameObject.transform.localRotation = localRotation;
+            blockGameObject.transform.localRotation = localRotation;
             blockGameObject.name = prefab.name;
             Block block = blockGameObject.GetComponent<Block>();
             Global.PolishBehaviour(block);
@@ -445,8 +445,10 @@ namespace KineticEnergy.Ships {
                             Debug.Log("<< Separating Grid >>");
                         #endregion
 
+                        //List of blocks to be moved to the new grid.
                         var removal = new Queue<Block>();
 
+                        //Find which blocks should be moved to the new grid.
                         using(IEnumerator<Traversal.Node> enumerator = traversal.StartEnumeration(group)) {
                             foreach(Traversal.Node node in traversal) {
                                 Block element = node.Element;
@@ -454,19 +456,25 @@ namespace KineticEnergy.Ships {
                             }
                         }
 
-                        Prefab<BlockGrid> prefab = FindObjectOfType<Master>().prefabs.grid;
-                        var grid = prefab.Instantiate(active: false);
-                        grid.gameObject.transform.position = transform.position;
-                        grid.gameObject.transform.rotation = transform.rotation;
-                        Global.PolishBehaviour(grid);
+                        //Prevent empty grids from being created.
+                        if(removal.Count == 0) continue;
 
+                        //Create the new grid.
+                        Prefab<BlockGrid> prefab = FindObjectOfType<Master>().prefabs.grid;
+                        Instantiated<BlockGrid> grid = prefab.Instantiate(active: false);
+                        grid.gameObject.transform.position = transform.position; //set position
+                        grid.gameObject.transform.rotation = transform.rotation; //set rotation
+                        Global.PolishBehaviour(grid);       //announce that the new grid exists
+
+                        //Set 'active' to the 'active' of the grid it came from (this one).
+                        grid.gameObject.SetActive(gameObject.activeSelf);
+
+                        //Move the blocks into the new grid.
                         foreach(Block element in removal) {
-                            //Not really recursion, since 'testSeparation = false' makes it skip this whole separation block.
                             RemoveBlockReferences(true, element);
                             grid.component.PlaceBlock(element, element.GridPosition);
                         }
 
-                        grid.gameObject.SetActive(gameObject.activeSelf);
 
                     }
                 }
@@ -582,66 +590,6 @@ namespace KineticEnergy.Ships {
 
         #endregion
 
-        #region Enumerable
-        //Basically makes this object compatible with a foreach loop.
-
-        /// <summary>Gets the universal iterable of this <see cref="BlockGrid"/>.
-        /// Basically, since this is here you can use this with a "foreach" loop.</summary>
-        /// <returns>Returns the <see cref="IEnumerator"/> of <see cref="Array"/>.</returns>
-        IEnumerator IEnumerable.GetEnumerator() => Array.GetEnumerator();
-
-        /// <summary>Gets the universal <see cref="Vector3Int"/> (array space) iterable of this <see cref="BlockGrid"/>.
-        /// Basically, use this with a "foreach" loop.</summary>
-        /// <returns>Returns the <see cref="IEnumerator"/> of <see cref="Array"/>.</returns>
-        public ArrayPointsEnumerator ArrayPoints => new CodeTools.Enumerators.ArrayPointsEnumerator(Size);
-
-        #endregion
-
-        #region Exceptions
-        /// <summary>Exception for when a <see cref="Block"/> was about to be / was overlapped by another <see cref="Block"/> in <see cref="Array"/>.</summary>
-        public class BlockOverlapException : Exception {
-
-            /// <summary>
-            /// Creates an error message:
-            /// <para/>
-            /// "The Block "[native.gameObject.name]" in the "[grid.gameObject.name]" BlockGrid was trying to overlap the Block "[native.gameObject.name]"
-            /// at the grid point [arrayPosition + grid.offset] / array point [arrayPosition]. Check for 'ghost' blocks."
-            /// <para/>
-            /// stoppedCompletely ? "This was interrupted before any data in the BlockGrid.array was changed."
-            /// <para/>
-            ///  : stoppedOverwrite ? "Although existing data was not changed, data on empty points of the grid may have been."
-            /// <para/>
-            /// tryToFix ? "An attempt at a fix has been made."
-            /// </summary>
-            /// <param name="grid">The grid where this overlap happened.</param>
-            /// <param name="arrayPosition">The position in the array where this overlap happened.</param>
-            /// <param name="native">The block that was/would've been overlapped.</param>
-            /// <param name="intruder">The block that was/would've been the one overlapping.</param>
-            /// <param name="stoppedOverwrite">Was this stopped before data in <see cref="Array"/> was changed?</param>
-            /// <param name="stoppedCompletely">Was this stopped before ANY data in <see cref="Array"/> was changed?</param>
-            /// <param name="tryToFix">O(n) operation, where n = volume. Removes all refrences to the block on the affected grid, then Destroys the block.</param>
-            public BlockOverlapException(BlockGrid grid, Vector3Int arrayPosition, Block native, Block intruder, bool stoppedOverwrite, bool stoppedCompletely, bool tryToFix) : base(
-                "The Block \"" + intruder.gameObject.name + "\" in the \"" + grid.gameObject.name + "\" BlockGrid was trying to overlap the Block \"" + native.gameObject.name +
-                "\" at the grid point " + (arrayPosition + grid.Offset) + " / array point " + arrayPosition + ". If this was saved, check for 'ghost' blocks." +
-                (stoppedCompletely ? "\nThis was interrupted before any data in the BlockGrid.array was changed."
-                : stoppedOverwrite ? "\nData on empty points may have been changed, although existing data was not changed." : "") +
-                (tryToFix ? "\nAn attempt at a fix has been made." : "")
-            ) {
-
-                if(tryToFix) {
-                    Vector3Int size = grid.Size;
-                    for(int x = 0; x < size.x; x++)
-                        for(int y = 0; y < size.y; y++)
-                            for(int z = 0; z < size.z; z++)
-                                if(grid.Array[x, y, z] == intruder)
-                                    grid.Array[x, y, z] = null;
-                }
-
-            }
-
-        }
-        #endregion
-
         #region Separation
 
         /// <summary>Determines if a <see cref="BlockGrid"/> was separated after a <see cref="Block"/> was removed from the given grid point.</summary>
@@ -673,7 +621,7 @@ namespace KineticEnergy.Ships {
 
             //Start traversing.
             Queue<IEnumerator<Traversal.Node>> enumerators = group.StartEnumerationQueue();
-            while(group.ActiveTraversalCount > 1 && group.UniqueRootCount > 1) {
+            while(group.ActiveTraversalCount > 1 && group.UniqueRoots.Count > 1) {
                 IEnumerator<Traversal.Node> enumerator = enumerators.Dequeue();
                 if(enumerator.MoveNext()) enumerators.Enqueue(enumerator);
                 else enumerator.Dispose();
@@ -681,6 +629,14 @@ namespace KineticEnergy.Ships {
 
             //Return the number of active traversals.
             final = group.MakeFreshTraversals();
+
+            #region Log Traversal (Basic)
+            if(CanShowLog(LevelOfDetail.Basic, Master?.LogSettings.traversal ?? LevelOfDetail.None))
+                Debug.LogFormat("<1> Traversal Count: {0}", traversals.Count);
+            if(CanShowLog(LevelOfDetail.Basic, Master?.LogSettings.traversal ?? LevelOfDetail.None))
+                Debug.LogFormat("<2> Returned Group Size: {0}", group.MakeFreshTraversals().Count);
+            #endregion
+
             return traversals.Count;
 
         }
@@ -710,19 +666,19 @@ namespace KineticEnergy.Ships {
                 }
             }
 
-            public int UniqueRootCount {
+            public LinkedList<Traversal.Node> UniqueRoots {
                 get {
                     var uniqueRoots = new LinkedList<Traversal.Node>();
                     foreach(Traversal traversal in Traversals) {
 
-                        foreach(Traversal.Node root in uniqueRoots)
-                            if(traversal.Root == root) goto Next;
+                        foreach(Traversal.Node item in uniqueRoots)
+                            if(traversal.Root == item) goto Next;
 
                         uniqueRoots.AddFirst(traversal.Root);
                         Next: continue;
 
                     }
-                    return uniqueRoots.Count;
+                    return uniqueRoots;
                 }
             }
 
@@ -733,18 +689,11 @@ namespace KineticEnergy.Ships {
                         traversal.Root = newRoot;
             }
 
-            public IEnumerable<Traversal> MakeFreshTraversals() {
-                var uniques = new LinkedList<Traversal>();
-                foreach(Traversal traversal in Traversals) {
-
-                    foreach(Traversal item in uniques)
-                        if(traversal.Root == item.Root) goto Next;
-
-                    uniques.AddFirst(new Traversal(traversal.Grid, traversal.Root));
-                    Next: continue;
-
-                }
-                return uniques;
+            public LinkedList<Traversal> MakeFreshTraversals() {
+                var traversals = new LinkedList<Traversal>();
+                foreach(Traversal.Node root in UniqueRoots)
+                    traversals.AddLast(root.Traversal);
+                return traversals;
             }
 
         }
@@ -894,12 +843,14 @@ namespace KineticEnergy.Ships {
                     if(value == null) {
                         log_current = false;
                         log_next = false;
+                        log_count = false;
                     } else {
                         log_current = CanShowLog(LevelOfDetail.Basic, value.traversal);
                         log_next = CanShowLog(LevelOfDetail.High, value.traversal);
+                        log_count = CanShowLog(LevelOfDetail.Basic, value.traversal);
                     }
                 }
-                private bool log_current, log_next;
+                private bool log_current, log_next, log_count;
 
                 /// <summary>The number of active <see cref="Node"/>s currently in the enumeration.</summary>
                 public int ActiveCount => Queue.Count;
@@ -972,6 +923,8 @@ namespace KineticEnergy.Ships {
 
                         }
 
+                        if(log_count) Debug.LogFormat("There are {0} unique root(s).", Group.UniqueRoots.Count);
+
                         return true;
 
                     }
@@ -1013,6 +966,66 @@ namespace KineticEnergy.Ships {
             }
         }
 
+        #endregion
+
+        #region Enumerable
+        //Basically makes this object compatible with a foreach loop.
+
+        /// <summary>Gets the universal iterable of this <see cref="BlockGrid"/>.
+        /// Basically, since this is here you can use this with a "foreach" loop.</summary>
+        /// <returns>Returns the <see cref="IEnumerator"/> of <see cref="Array"/>.</returns>
+        IEnumerator IEnumerable.GetEnumerator() => Array.GetEnumerator();
+
+        /// <summary>Gets the universal <see cref="Vector3Int"/> (array space) iterable of this <see cref="BlockGrid"/>.
+        /// Basically, use this with a "foreach" loop.</summary>
+        /// <returns>Returns the <see cref="IEnumerator"/> of <see cref="Array"/>.</returns>
+        public ArrayPointsEnumerator ArrayPoints => new CodeTools.Enumerators.ArrayPointsEnumerator(Size);
+
+        #endregion
+
+        #region Exceptions
+        /// <summary>Exception for when a <see cref="Block"/> was about to be / was overlapped by another <see cref="Block"/> in <see cref="Array"/>.</summary>
+        public class BlockOverlapException : Exception {
+
+            /// <summary>
+            /// Creates an error message:
+            /// <para/>
+            /// "The Block "[native.gameObject.name]" in the "[grid.gameObject.name]" BlockGrid was trying to overlap the Block "[native.gameObject.name]"
+            /// at the grid point [arrayPosition + grid.offset] / array point [arrayPosition]. Check for 'ghost' blocks."
+            /// <para/>
+            /// stoppedCompletely ? "This was interrupted before any data in the BlockGrid.array was changed."
+            /// <para/>
+            ///  : stoppedOverwrite ? "Although existing data was not changed, data on empty points of the grid may have been."
+            /// <para/>
+            /// tryToFix ? "An attempt at a fix has been made."
+            /// </summary>
+            /// <param name="grid">The grid where this overlap happened.</param>
+            /// <param name="arrayPosition">The position in the array where this overlap happened.</param>
+            /// <param name="native">The block that was/would've been overlapped.</param>
+            /// <param name="intruder">The block that was/would've been the one overlapping.</param>
+            /// <param name="stoppedOverwrite">Was this stopped before data in <see cref="Array"/> was changed?</param>
+            /// <param name="stoppedCompletely">Was this stopped before ANY data in <see cref="Array"/> was changed?</param>
+            /// <param name="tryToFix">O(n) operation, where n = volume. Removes all refrences to the block on the affected grid, then Destroys the block.</param>
+            public BlockOverlapException(BlockGrid grid, Vector3Int arrayPosition, Block native, Block intruder, bool stoppedOverwrite, bool stoppedCompletely, bool tryToFix) : base(
+                "The Block \"" + intruder.gameObject.name + "\" in the \"" + grid.gameObject.name + "\" BlockGrid was trying to overlap the Block \"" + native.gameObject.name +
+                "\" at the grid point " + (arrayPosition + grid.Offset) + " / array point " + arrayPosition + ". If this was saved, check for 'ghost' blocks." +
+                (stoppedCompletely ? "\nThis was interrupted before any data in the BlockGrid.array was changed."
+                : stoppedOverwrite ? "\nData on empty points may have been changed, although existing data was not changed." : "") +
+                (tryToFix ? "\nAn attempt at a fix has been made." : "")
+            ) {
+
+                if(tryToFix) {
+                    Vector3Int size = grid.Size;
+                    for(int x = 0; x < size.x; x++)
+                        for(int y = 0; y < size.y; y++)
+                            for(int z = 0; z < size.z; z++)
+                                if(grid.Array[x, y, z] == intruder)
+                                    grid.Array[x, y, z] = null;
+                }
+
+            }
+
+        }
         #endregion
 
     }

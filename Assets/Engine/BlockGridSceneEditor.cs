@@ -77,7 +77,7 @@ namespace KineticEnergy.Ships {
             if(Event.current.type == EventType.MouseDown) {
                 if(Event.current.button == 0) {
                     if(grid != null) {
-                        selectedBlock.Place(grid, grid.WorldPoint_to_LocalWorld(selectedBlock.transform.position));
+                        selectedBlock.Place(grid, grid.WorldPoint_to_LocalWorld(selectedBlock.transform.position), Quaternion.Euler(0, 0, 0));
                     } else {
                         selectedBlock.PlaceNewGrid();
                     }

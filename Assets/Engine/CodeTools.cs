@@ -451,7 +451,7 @@ namespace KineticEnergy {
                 object IEnumerator.Current => mask[index];
                 public bool MoveNext() => ++index < 32;
                 public void Reset() => index = -1;
-                public void Dispose() { }
+                public void Dispose() { /* Nothing to dispose of. */}
             }
 
         }

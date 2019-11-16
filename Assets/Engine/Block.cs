@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using KineticEnergy.Unity;
 using KineticEnergy.Content;
 using KineticEnergy.Structs;
 using KineticEnergy.CodeTools.Math;
@@ -15,6 +14,7 @@ namespace KineticEnergy.Ships.Blocks {
 
     #region Editor
 #if UNITY_EDITOR
+    using KineticEnergy.Unity;
 
     [CustomEditor(typeof(Block), true)]
     [CanEditMultipleObjects]
@@ -137,6 +137,8 @@ namespace KineticEnergy.Ships.Blocks {
             if(Grid != null) Grid.PlaceEnablingBlock(this, transform.localPosition);
             StasisAwake(m_disabled ? 0f : m_disabledTime - Time.time);
         }
+        /// <summary>[Base Call Not Needed]</summary>
+        /// <param name="time"></param>
         public virtual void StasisAwake(float time) { }
 
         public void OnDisable() {
@@ -145,13 +147,14 @@ namespace KineticEnergy.Ships.Blocks {
             m_disabled = true;
             m_disabledTime = Time.time;
         }
+        /// <summary>[Base Call Not Needed]</summary>
         public virtual void StasisAsleep() { }
 
-        /// <summary>Method called when prefab is loaded. Use this if you wanna do anything fancy with the prefab.</summary>
+        /// <summary>[Base Call Not Needed] Method called when prefab is loaded. Use this if you wanna do anything fancy with the prefab.</summary>
         public virtual void PrefabSetup() { }
 
 #if UNITY_EDITOR
-        /// <summary>Override this method to show custom information in the unity editor.</summary>
+        /// <summary>[Base Call Not Needed] Override this method to show custom information in the unity editor.</summary>
         public virtual void OnInspectorGUI(UnityEngine.Object[] targets) { }
 #endif
 
@@ -159,8 +162,10 @@ namespace KineticEnergy.Ships.Blocks {
 
         #region Properties, Constants, and Setup Methods
 
+        /// <summary>Every block cintains a <see cref="BlockGrid.Traversal.Node"/> so a new array does not have to be created for every <see cref="BlockGrid.Traversal"/>.</summary>
         public BlockGrid.Traversal.Node Node { get; set; } = null;
 
+        /// <summary>This <see cref="Block"/>'s reference to the <see cref="Master"/>.</summary>
         public Master Master {
             get => master ?? throw new NullReferenceException(string.Format("'{0}' is null. Was '{1}' called on this {2}?",
                 nameof(Master), nameof(GlobalBehavioursManager.PolishBehaviour), nameof(Block)));
@@ -168,10 +173,11 @@ namespace KineticEnergy.Ships.Blocks {
         }
         private Master master;
 
+        /// <summary>This <see cref="Block"/>'s reference to the <see cref="GlobalBehavioursManager"/>.</summary>
         public GlobalBehavioursManager Global => Master.Global;
 
         /// <summary>The name of this block.</summary>
-        /// <remarks>Currently just a property for the <c>gameObject.name</c>.</remarks>
+        /// <remarks>Currently just a property for the <c>gameObject.name</c>. No plan to change that yet.</remarks>
         public string Name {
             get { return gameObject.name; }
             set { gameObject.name = value; }
@@ -249,17 +255,27 @@ namespace KineticEnergy.Ships.Blocks {
         /// <seealso cref="Vector3Int.one"/>
         public Vector3Int GridCorner => Dimensions - Vector3Int.one;
 
+        /// <summary>The surface area on the x side.</summary>
+        /// <seealso cref="UpdateAreaValues"/>
         public int XArea { get; private set; }
+        /// <summary>The surface area on the y side.</summary>
+        /// <seealso cref="UpdateAreaValues"/>
         public int YArea { get; private set; }
+        /// <summary>The surface area on the z side.</summary>
+        /// <seealso cref="UpdateAreaValues"/>
         public int ZArea { get; private set; }
-        private void UpdateAreaValues() {
-            XArea = Dimensions.y * Dimensions.z;
-            YArea = Dimensions.z * Dimensions.x;
-            ZArea = Dimensions.x * Dimensions.y;
-        }
 
         /// <summary>The surface area defined by the <see cref="Dimensions"/>.</summary>
-        public int SurfaceArea => (XArea + YArea + ZArea) * 2;
+        public int SurfaceArea { get; private set; }
+
+        /// <summary>Uses the current value of <see cref="Dimensions"/> to set the values of <see cref="XArea"/>, <see cref="YArea"/>, and <see cref="ZArea"/>.</summary>
+        private void UpdateAreaValues() {
+            Vector3Int dimensions = Dimensions;
+            XArea = dimensions.y * dimensions.z;
+            YArea = dimensions.z * dimensions.x;
+            ZArea = dimensions.x * dimensions.y;
+            SurfaceArea = (XArea + YArea + ZArea) * 2;
+        }
 
         /// <summary>The position of this block in its <see cref="BlockGrid"/> grid space.</summary>
         /// <seealso cref="Grid"/>
@@ -1163,7 +1179,7 @@ namespace KineticEnergy.Ships.Blocks {
             /// <param name="children">0: only parent, 1: only children, 2: both</param>
             /// <param name="targets">Does this <see cref="BlockAttribute"/> apply to just the preview, just the original, or both?</param>
             public Material(string diffusePath, bool diffusePoint, string normalPath, bool normalPoint, byte children = 2, AppliesTo targets = AppliesTo.Both) {
-                this.Targets = targets;
+                Targets = targets;
                 this.diffusePath = diffusePath;
                 this.diffusePoint = diffusePoint;
                 this.normalPath = normalPath;
@@ -1216,12 +1232,29 @@ namespace KineticEnergy.Ships.Blocks {
             public readonly int identifier = 0;
             public ParticleSystem(int identifier = 0, AppliesTo targets = AppliesTo.Original) {
                 this.identifier = identifier;
-                this.Targets = targets;
+                Targets = targets;
             }
 
             public override void ApplyTo(GameObject block, Master master, bool asPreview) {
                 var particles = block.AddComponent<UnityEngine.ParticleSystem>();
                 SendToPrefabEditors(master, block, particles, asPreview, this);
+            }
+
+        }
+
+        [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+        public class ThrusterVFX : BlockAttribute {
+            public override Order Order => Order.Default;
+
+            public readonly int identifier = 0;
+            public ThrusterVFX(int identifier = 0, AppliesTo targets = AppliesTo.Original) {
+                this.identifier = identifier;
+                Targets = targets;
+            }
+
+            public override void ApplyTo(GameObject block, Master master, bool asPreview) {
+                var vfx = master.prefabs.thrustVFX.Instantiate(block.transform);
+                SendToPrefabEditors(master, block, vfx, asPreview, this);
             }
 
         }
@@ -1236,7 +1269,7 @@ namespace KineticEnergy.Ships.Blocks {
             public readonly int identifier = 0;
             public SelectableBox(float centerX, float centerY, float centerZ, float sizeX, float sizeY, float sizeZ, int identifier = 0, AppliesTo targets = AppliesTo.Original) {
                 this.identifier = identifier;
-                this.Targets = targets;
+                Targets = targets;
                 center = new Vector3(centerX, centerY, centerZ);
                 size = new Vector3(sizeX, sizeY, sizeZ);
             }

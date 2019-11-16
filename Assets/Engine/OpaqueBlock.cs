@@ -1,11 +1,11 @@
-﻿using KineticEnergy.Unity;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace KineticEnergy.Ships.Blocks {
 
     #region Editor
 #if UNITY_EDITOR
+    using KineticEnergy.Unity;
 
     [CustomEditor(typeof(OpaqueBlock), true)]
     [CanEditMultipleObjects]
