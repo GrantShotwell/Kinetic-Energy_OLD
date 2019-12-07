@@ -1,15 +1,16 @@
-﻿using UnityEngine;
-using KineticEnergy.Ships;
-using KineticEnergy.Ships.Blocks;
-using KineticEnergy.Entities;
-using KineticEnergy.Interfaces.Input;
+﻿using KineticEnergy.Entities;
+using KineticEnergy.Grids;
+using KineticEnergy.Grids.Blocks;
 using KineticEnergy.Intangibles.Client;
+using KineticEnergy.Structs;
+using UnityEngine;
 
 namespace KineticEnergy.Mods.Vanilla.Blocks {
 
     [BlockAttributes.BasicInfo(
         "Cockpit", 1, 2, 1,
-        3000, 0.0f, 0.0f, 0.0f
+        3000, 0.0f, 0.0f, 0.0f,
+        true
     )]
     [BlockAttributes.BoxCollider( //base
         0.0f, -0.45f, 0.0f,
@@ -30,33 +31,42 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
         +0.3473111f, 0.5174136f, 0.1362655f,
         0.06344479f, 0.04286408f, 0.7031212f)]
     [BlockAttributes.Mesh(
-        "Content\\Vanilla\\Blocks\\Cockpit\\Cockpit.obj")]
+        "Content\\Vanilla\\Models\\Cockpit.obj")]
     [BlockAttributes.Material(
-        "Content\\Vanilla\\Blocks\\ArmorBlock\\diffuse.png", true, 0)]
+        "Content\\Vanilla\\Textures\\armor-diffuse.png", true, 0)]
     [BlockAttributes.SelectableBox(
         0.00f, 0.25f, 0.00f,
         1.10f, 2.20f, 1.10f)]
     class Cockpit : TransparentBlock {
+
+        public override Vector3 TransformOffset => base.TransformOffset + new Vector3(0.0f, -0.5f, 0.0f);
 
         public GridDriver Driver { get; set; }
         public Selectable Selectable { get; set; }
         public Player Player { get; set; }
 
         private Quaternion RotOffset { get; set; }
-        public Quaternion ChairRotation => transform.rotation * RotOffset;
+        public Quaternion LocalChairRotation => transform.localRotation * RotOffset;
+        public Quaternion WorldChairRotation => transform.rotation * RotOffset;
 
         public void Start() {
             RotOffset = Quaternion.Euler(0f, 180f, 0f);
             Selectable = GetComponentInChildren<Selectable>();
             Selectable.onDown.Add(OnSelected);
         }
+        
+        protected override void VerifyLocation(GridLocation oldLocation, GridLocation newLocation) {
 
-        public override void OnGridUpdated() {
-            Driver = Grid.GetComponent<GridDriver>();
-            if(!Driver) {
-                Driver = Grid.gameObject.AddComponent<GridDriver>();
-                Driver.Grid = Grid;
+            if(oldLocation.Grid == newLocation.Grid) return; 
+
+            BlockGrid grid = newLocation.Grid;
+            GridDriver driver = grid.GetComponent<GridDriver>();
+            if(!driver) {
+                driver = grid.gameObject.AddComponent<GridDriver>();
+                driver.Grid = grid;
             }
+            Driver = driver;
+
         }
 
         public void OnSelected(Entity sender) {
@@ -65,7 +75,9 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
                 player.GetComponent<Collider>().enabled = false;
                 player.holdInputs = true;
                 player.gameObject.transform.SetParent(transform);
-                player.transform.localPosition = Vector3.up / 2;
+
+                SetPlayerPosRot(player);
+
                 Player = player;
 
             }
@@ -79,6 +91,7 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
             player.GetComponent<Collider>().enabled = true;
             player.holdInputs = false;
             player.gameObject.transform.SetParent(null, true);
+            player.transform.position += -player.transform.forward;
 
         }
 
@@ -96,35 +109,31 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
 
                 } else {
 
-                    Quaternion chair = ChairRotation;
-
-                    player.transform.localPosition = Vector3.up / 2;
-                    player.transform.rotation = transform.rotation;
+                    Quaternion chair = LocalChairRotation;
                     driver.Move = Quaternion.Inverse(chair) * inputs.move;
                     driver.Look = Quaternion.Inverse(chair) * inputs.look;
+
+                    SetPlayerPosRot(player);
 
                 }
 
             }
         }
 
-        public class Preview : BlockPreview { }
+        private void SetPlayerPosRot(Player player) {
 
-    }
+            Rigidbody rigidbody = player.Rigidbody;
+            Rigidbody grid = Location.Grid.rigidbody;
+            rigidbody.velocity = grid.velocity;
+            rigidbody.angularVelocity = grid.angularVelocity;
 
-    public class GridDriver : MonoBehaviour {
+            Transform transform = player.transform;
+            transform.localPosition = Vector3.up / 2;
+            transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
 
-        public Vector3 Move { get; set; }
-        public Vector3 Look { get; set; }
-        public BlockGrid Grid { get; set; }
-        
-        public void Start() {
-            if(!Grid) Grid = GetComponent<BlockGrid>();
-            foreach(Block block in Grid) {
-                if(block is Thruster thruster)
-                    thruster.SetDriver(this);
-            }
         }
+
+        public class Preview : BlockPreview { }
 
     }
 

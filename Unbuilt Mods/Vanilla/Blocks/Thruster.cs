@@ -1,90 +1,96 @@
 ﻿using System.Collections.Generic;
+using KineticEnergy.Enumeration;
+using KineticEnergy.Grids;
+using KineticEnergy.Grids.Blocks;
+using KineticEnergy.Intangibles.Terminal;
+using KineticEnergy.Intangibles.UI;
+using KineticEnergy.Maths;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.VFX;
-using KineticEnergy.Ships.Blocks;
-using KineticEnergy.CodeTools.Enumerators;
-using KineticEnergy.Interfaces;
-using KineticEnergy.Intangibles;
-using KineticEnergy.Intangibles.UI;
-using KineticEnergy.Intangibles.Terminal;
-using KineticEnergy.CodeTools.Math;
+using static KineticEnergy.Maths.Methods;
 
 namespace KineticEnergy.Mods.Vanilla.Blocks {
 
     [BlockAttributes.BasicInfo(
         "Thruster", 1, 1, 1,
-        8000, 0.0f, -0.4f, 0.0f
+        8000, 0.0f, -0.4f, 0.0f,
+        false
     )]
     [BlockAttributes.BoxCollider(
         0.0f, 0.0f, 0.0f,
         1.0f, 1.0f, 1.0f
     )]
     [BlockAttributes.Mesh(
-        "Content\\Vanilla\\Blocks\\TestThruster\\ObjTest.obj")]
+        "Content\\Vanilla\\Models\\ObjTest.obj")]
     [BlockAttributes.Material(
-        "Content\\Vanilla\\Blocks\\ArmorBlock\\diffuse.png", true, 0)]
-    [BlockAttributes.ThrusterVFX(mAttribute_EXAUST)]
-    public class Thruster : TransparentBlock, IBlockTerminal, IPrefabEditor<VisualEffect> {
-        const int mAttribute_EXAUST = 1;
+        "Content\\Vanilla\\Textures\\armor-diffuse.png", true, 0)]
+    [BlockAttributes.ThrusterVFX]
+    public class Thruster : TransparentBlock, IBlockTerminal, IGridDrivable {
 
-        void IPrefabEditor<VisualEffect>.OnPrefab(Master master, VisualEffect effect, bool asPreview, BlockAttributes.BlockAttribute sender) {
-            //Only intended for the ParticleSystem attribute.
-            if(sender is BlockAttributes.ParticleSystem attribute) {
+        #region Inspector
+#if UNITY_EDITOR
+        public override void OnInspectorGUI(Object[] targets, SerializedObject serializedObject) {
+            
+            base.OnInspectorGUI(targets, serializedObject);
 
-                //Only intended for the exaust attribute.
-                if(attribute.identifier == mAttribute_EXAUST) {
+            GUI.enabled = false;
+            EditorGUILayout.Toggle("Thrusting", (targets[0] as Thruster).IsThrusting);
 
-                    Effect = effect;
+            GUI.enabled = false;
+            EditorGUILayout.FloatField("Power", (targets[0] as Thruster).ThrustPower);
 
-                }
-
-            }
         }
+#endif
+        #endregion
 
         public const float FORCE = 1000000;
 
-        TerminalMenu mMenu_thrusting;
+        private TerminalMenu mMenu_thrusting;
         public float ThrustPower { get; set; } = 1.00f;
-        public bool IsThrusting => thrustForced || ThrustPower > 0.00f;
+        public bool ThrustForced { get; set; } = false;
+        public bool IsThrusting => ThrustForced || ThrustPower > 0.10f;
 
         /// <summary>Override driver controls to be full thrust?</summary>
         /// <returns>Returns the input value.</returns>
-        public bool ForceThrust(bool input) => thrustForced = input;
-        private bool thrustForced = false;
+        public bool ForceThrust(bool input) => ThrustForced = input;
 
-        private GridDriver driver;
-        public void SetDriver(GridDriver value) {
-            Debug.Log("Set driver.");
-            driver = value;
-        }
-
-        public IEnumerable<TerminalMenu> Menus => new PropertyEnumerable<TerminalMenu>(mMenu_thrusting);
+        public IEnumerable<TerminalMenu> Menus => new Properties<TerminalMenu>(mMenu_thrusting);
         public UIManager Manager { get; set; }
 
         public VisualEffect Effect { get; set; }
-
-        public void Awake() {
-
-            mMenu_thrusting = new TerminalMenu("Enabled",
-                new ButtonTerminal(ForceThrust));
-
-        }
+        public GridDriver Driver { get; set; }
 
         public void Start() {
+            Effect = GetComponentInChildren<VisualEffect>();
+            mMenu_thrusting = new TerminalMenu("Enabled",
+                new ButtonTerminal(ForceThrust));
             var driver = GetComponentInParent<GridDriver>();
-            if(driver) SetDriver(driver);
+            if(driver) Driver = driver;
         }
 
         //Apply thruster force.
         public void FixedUpdate() {
 
             //If the thrust is forced, power = 1, otherwise check driver inputs if there is one.
-            ThrustPower = driver ? Vector3.Dot(driver.Move, transform.up) : thrustForced ? 1.00f : 0.00f;
+            if(ThrustForced) ThrustPower = 1.00f;
+            else if(Driver) {
 
-            bool thrusting = IsThrusting;
-            if(Grid != null && thrusting) {
+                Vector3 up = transform.up;
+                Vector3 move = Driver.Move;
+                Axis axis = LargestComponent(up);
+
+                ThrustPower = (axis == Axis.X ? (move.x == 0 ? false : (up.x > 0 == move.x > 0))
+                             : axis == Axis.Y ? (move.y == 0 ? false : (up.y > 0 == move.y > 0))
+                             : axis == Axis.Z ? (move.z == 0 ? false : (up.z > 0 == move.z > 0))
+                             : false) ? 1.00f : 0.00f;
+
+            } else ThrustPower = 0.00f;
+
+            BlockGrid grid = Location.Grid;
+            if(grid && IsThrusting) {
                 var force = FORCE * ThrustPower * Time.deltaTime;
-                Grid.Rigidbody.AddForceAtPosition(transform.up * -force, transform.position);
+                grid.Rigidbody.AddForceAtPosition(transform.up * -force, transform.position);
             }
 
             VisualEffect effect = Effect;

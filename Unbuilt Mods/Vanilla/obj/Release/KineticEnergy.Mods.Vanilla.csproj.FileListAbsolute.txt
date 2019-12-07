@@ -1,0 +1,6 @@
+C:\My Stuff\Unity Projects\BUILDS\KE\Content\Vanilla\KineticEnergy.Mods.Vanilla.dll
+C:\My Stuff\Unity Projects\BUILDS\KE\Content\Vanilla\KineticEnergy.Mods.Vanilla.pdb
+C:\My Stuff\Unity Projects\Kinetic Energy\Unbuilt Mods\Vanilla\obj\Release\KineticEnergy.Mods.Vanilla.csprojAssemblyReference.cache
+C:\My Stuff\Unity Projects\Kinetic Energy\Unbuilt Mods\Vanilla\obj\Release\KineticEnergy.Mods.Vanilla.csproj.CopyComplete
+C:\My Stuff\Unity Projects\Kinetic Energy\Unbuilt Mods\Vanilla\obj\Release\KineticEnergy.Mods.Vanilla.dll
+C:\My Stuff\Unity Projects\Kinetic Energy\Unbuilt Mods\Vanilla\obj\Release\KineticEnergy.Mods.Vanilla.pdb

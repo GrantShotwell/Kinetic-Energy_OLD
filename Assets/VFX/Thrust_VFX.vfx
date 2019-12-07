@@ -51,7 +51,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614528}
   - {fileID: 114596491906001080}
   - {fileID: 8926484042661614825}
-  m_UIPosition: {x: 707, y: 1410}
+  m_UIPosition: {x: 707, y: 1521}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots:
@@ -142,7 +142,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.AABox, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"center":{"x":0.0,"y":0.0,"z":0.0},"size":{"x":5.0,"y":5.0,"z":5.0}}'
+      m_SerializableObject: '{"center":{"x":0.0,"y":4.0,"z":0.0},"size":{"x":1.0,"y":8.0,"z":1.0}}'
     m_Space: 0
   m_Property:
     name: bounds
@@ -170,10 +170,10 @@ MonoBehaviour:
   categories: []
   uiBounds:
     serializedVersion: 2
-    x: 231
+    x: 237
     y: -197
-    width: 853
-    height: 2249
+    width: 847
+    height: 2361
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -453,7 +453,7 @@ MonoBehaviour:
   m_Children:
   - {fileID: 8926484042661614788}
   - {fileID: 8926484042661614810}
-  m_UIPosition: {x: 708, y: 1069}
+  m_UIPosition: {x: 708, y: 1180}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots: []
@@ -775,7 +775,7 @@ VisualEffectResource:
       = min(stripIndex, STRIP_COUNT);\n\t\t// TODO Change seed to be sure we're deterministic
       on random with strip\n#else\n\t\tuint stripIndex = 0;\n#endif\n        \n       
       {\n            PositionSphere_0( /*inout */position,  /*inout */seed,  /*inout
-      */direction, ArcSphere_sphere_center_a, (float)0.02, (float)6.283185, (float)1);\n       
+      */direction, ArcSphere_sphere_center_a, (float)0.05, (float)6.283185, (float)1);\n       
       }\n        {\n            SetAttribute_EC596896( /*inout */lifetime,  /*inout
       */seed, (float)0.1, (float)1);\n        }\n        SetAttribute_E6295C0( /*inout
       */velocity,  /*inout */seed, A_c, B_c);\n        \n\n\n\t\tuint index = particleIndex;\n#if
@@ -1001,7 +1001,7 @@ VisualEffectResource:
       /*inout */axisX,  /*inout */axisY,  /*inout */axisZ);\n\t\t\t\t{\n\t\t\t\t   
       AttributeFromCurve_496B4028( /*inout */size, particleId, Size_b, (uint)0);\n\t\t\t\t}\n\t\t\t\tColorOverLife_736FB(age,
       lifetime,  /*inout */color,  /*inout */alpha, gradient_c);\n\t\t\t\t{\n\t\t\t\t   
-      SetAttribute_39EE3455( /*inout */size, (float)0.03);\n\t\t\t\t}\n\t\t\t\t\n\n\t\t\t\t\n\t\t\t#if
+      SetAttribute_39EE3455( /*inout */size, (float)0.06);\n\t\t\t\t}\n\t\t\t\t\n\n\t\t\t\t\n\t\t\t#if
       !HAS_STRIPS\n\t\t\t\tif (!alive)\n\t\t\t\t\treturn o;\n\t\t\t#endif\n\t\t\t\t\n\t\t\t#if
       VFX_PRIMITIVE_QUAD\n\t\t\t\n\t\t\t#if HAS_STRIPS\n\t\t\t#if VFX_STRIPS_UV_STRECHED\n\t\t\t\to.VFX_VARYING_UV.x
       = (float)(currentIndex) / (STRIP_DATA(STRIP_NEXT_INDEX) - 1);\n\t\t\t#else\n\t\t\t\to.VFX_VARYING_UV.x
@@ -1149,25 +1149,25 @@ VisualEffectResource:
         data[0]: -1
         data[1]: -1
         data[2]: -1
-        data[3]: 3
-      - op: 1
-        valueIndex: 11
-        data[0]: -1
-        data[1]: -1
-        data[2]: -1
         data[3]: 14
       - op: 1
-        valueIndex: 12
+        valueIndex: 9
         data[0]: -1
         data[1]: -1
         data[2]: -1
         data[3]: 3
       - op: 9
-        valueIndex: 15
+        valueIndex: 12
         data[0]: -1
         data[1]: -1
         data[2]: -1
         data[3]: -1
+      - op: 1
+        valueIndex: 28
+        data[0]: -1
+        data[1]: -1
+        data[2]: -1
+        data[3]: 3
       - op: 1
         valueIndex: 31
         data[0]: -1
@@ -1186,18 +1186,18 @@ VisualEffectResource:
         data[1]: -1
         data[2]: -1
         data[3]: -1
-      - op: 57
-        valueIndex: 36
-        data[0]: 7
-        data[1]: -1
-        data[2]: -1
-        data[3]: 0
       - op: 1
-        valueIndex: 37
+        valueIndex: 36
         data[0]: -1
         data[1]: -1
         data[2]: -1
         data[3]: 6
+      - op: 57
+        valueIndex: 37
+        data[0]: 6
+        data[1]: -1
+        data[2]: -1
+        data[3]: 0
       - op: 56
         valueIndex: 38
         data[0]: 10
@@ -1218,8 +1218,8 @@ VisualEffectResource:
         data[3]: 1
       - op: 43
         valueIndex: 44
-        data[0]: 9
-        data[1]: 8
+        data[0]: 8
+        data[1]: 4
         data[2]: -1
         data[3]: -1
       - op: 1
@@ -1248,8 +1248,8 @@ VisualEffectResource:
         data[3]: 1
       - op: 42
         valueIndex: 51
-        data[0]: 9
-        data[1]: 6
+        data[0]: 8
+        data[1]: 9
         data[2]: -1
         data[3]: -1
       - op: 1
@@ -1258,14 +1258,20 @@ VisualEffectResource:
         data[1]: -1
         data[2]: -1
         data[3]: 3
-      - op: 43
+      - op: 1
         valueIndex: 57
-        data[0]: 9
-        data[1]: 4
+        data[0]: -1
+        data[1]: -1
+        data[2]: -1
+        data[3]: 3
+      - op: 43
+        valueIndex: 60
+        data[0]: 8
+        data[1]: 7
         data[2]: -1
         data[3]: -1
       - op: 1
-        valueIndex: 60
+        valueIndex: 63
         data[0]: -1
         data[1]: -1
         data[2]: -1
@@ -1279,34 +1285,36 @@ VisualEffectResource:
         - m_ExpressionIndex: 3
           m_Value: 0
         - m_ExpressionIndex: 17
-          m_Value: 0.1
-        - m_ExpressionIndex: 19
-          m_Value: 0.03
-        - m_ExpressionIndex: 20
           m_Value: 1
+        - m_ExpressionIndex: 19
+          m_Value: 0.1
+        - m_ExpressionIndex: 20
+          m_Value: 0.06
         - m_ExpressionIndex: 21
           m_Value: 6.2831855
         - m_ExpressionIndex: 22
-          m_Value: 0.02
+          m_Value: 0.05
       m_Vector2f:
         m_Array: []
       m_Vector3f:
         m_Array:
         - m_ExpressionIndex: 4
-          m_Value: {x: -0.2, y: 1, z: -0.2}
-        - m_ExpressionIndex: 6
+          m_Value: {x: 0.2, y: 6, z: 0.2}
+        - m_ExpressionIndex: 7
+          m_Value: {x: -0.2, y: 3, z: -0.2}
+        - m_ExpressionIndex: 9
           m_Value: {x: 0, y: 0, z: 0}
-        - m_ExpressionIndex: 8
-          m_Value: {x: 0.2, y: 3, z: 0.2}
         - m_ExpressionIndex: 11
           m_Value: {x: 1, y: 1, z: 1}
         - m_ExpressionIndex: 24
-          m_Value: {x: 5, y: 5, z: 5}
+          m_Value: {x: 1, y: 8, z: 1}
+        - m_ExpressionIndex: 25
+          m_Value: {x: 0, y: 4, z: 0}
       m_Vector4f:
         m_Array: []
       m_Uint:
         m_Array:
-        - m_ExpressionIndex: 14
+        - m_ExpressionIndex: 13
           m_Value: 0
       m_Int:
         m_Array:
@@ -1352,7 +1360,7 @@ VisualEffectResource:
             m_RotationOrder: 4
       m_Gradient:
         m_Array:
-        - m_ExpressionIndex: 7
+        - m_ExpressionIndex: 6
           m_Value:
             serializedVersion: 2
             key0: {r: 0, g: 1.309804, b: 2, a: 1}
@@ -1384,7 +1392,7 @@ VisualEffectResource:
             m_NumAlphaKeys: 4
       m_NamedObject:
         m_Array:
-        - m_ExpressionIndex: 26
+        - m_ExpressionIndex: 27
           m_Value: {fileID: 2800000, guid: f66f743b1d8e82f44a027852526a2b93, type: 3}
       m_Bool:
         m_Array:
@@ -1623,7 +1631,7 @@ VisualEffectResource:
       index: 7
     values:
     - nameId: bounds_center
-      index: 6
+      index: 25
     - nameId: bounds_size
       index: 24
     tasks:
@@ -1644,10 +1652,10 @@ VisualEffectResource:
       - nameId: A_c
         index: 18
       - nameId: B_c
-        index: 25
+        index: 26
       params:
       - nameId: bounds_center
-        index: 6
+        index: 25
       - nameId: bounds_size
         index: 24
       processor: {fileID: 0}
@@ -1695,9 +1703,9 @@ VisualEffectResource:
       - nameId: Size_b
         index: 15
       - nameId: gradient_c
-        index: 13
+        index: 14
       - nameId: mainTexture
-        index: 26
+        index: 27
       params:
       - nameId: sortPriority
         index: 0
@@ -1818,7 +1826,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.ArcSphere, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"sphere":{"center":{"x":0.0,"y":0.0,"z":0.0},"radius":0.019999999552965165},"arc":6.2831854820251469}'
+      m_SerializableObject: '{"sphere":{"center":{"x":0.0,"y":0.0,"z":0.0},"radius":0.05000000074505806},"arc":6.2831854820251469}'
     m_Space: 0
   m_Property:
     name: ArcSphere
@@ -2349,7 +2357,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.Vector, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"vector":{"x":0.20000000298023225,"y":3.0,"z":0.20000000298023225}}'
+      m_SerializableObject: '{"vector":{"x":0.20000000298023225,"y":6.0,"z":0.20000000298023225}}'
     m_Space: 0
   m_Property:
     name: A
@@ -2525,7 +2533,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.Vector, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"vector":{"x":-0.20000000298023225,"y":1.0,"z":-0.20000000298023225}}'
+      m_SerializableObject: '{"vector":{"x":-0.20000000298023225,"y":3.0,"z":-0.20000000298023225}}'
     m_Space: 0
   m_Property:
     name: B
@@ -3270,7 +3278,7 @@ MonoBehaviour:
     linkedSlots:
     - outputSlot: {fileID: 8926484042661614824}
       inputSlot: {fileID: 8926484042661614785}
-    position: {x: 231, y: -150}
+    position: {x: 240, y: -151}
     expandedSlots: []
     expanded: 0
 --- !u!114 &8926484042661614824
@@ -3358,7 +3366,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 0.03
+      m_SerializableObject: 0.06
     m_Space: 2147483647
   m_Property:
     name: Size

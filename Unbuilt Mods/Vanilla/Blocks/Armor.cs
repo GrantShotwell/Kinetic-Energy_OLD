@@ -1,11 +1,11 @@
-﻿using UnityEngine;
-using KineticEnergy.Ships.Blocks;
+﻿using KineticEnergy.Grids.Blocks;
 
 namespace KineticEnergy.Mods.Vanilla.Blocks {
 
     [BlockAttributes.BasicInfo(
         "Armor", 1, 1, 1,
-        10000, 0, 0, 0
+        10000, 0, 0, 0,
+        true
     )]
     [BlockAttributes.BoxCollider(0, 0, 0, 1, 1, 1)]
     [BlockAttributes.FlatFace(Face.PosX)]
@@ -15,10 +15,12 @@ namespace KineticEnergy.Mods.Vanilla.Blocks {
     [BlockAttributes.FlatFace(Face.PosZ)]
     [BlockAttributes.FlatFace(Face.NegZ)]
     [BlockAttributes.Material(
-        "Content\\Vanilla\\Blocks\\ArmorBlock\\diffuse.png", true,
-        "Content\\Vanilla\\Blocks\\ArmorBlock\\normal.png", true, 1)]
+        "Content\\Vanilla\\Textures\\armor-diffuse.png", true,
+        "Content\\Vanilla\\Textures\\armor-height.png", false, 1)]
     public class Armor : OpaqueBlock {
+
         public class Preview : BlockPreview { }
+
     }
 
 }
